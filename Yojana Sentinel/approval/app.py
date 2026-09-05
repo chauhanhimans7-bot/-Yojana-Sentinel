@@ -49,10 +49,17 @@ app.secret_key = "yojana-sentinel-dev-key"
 # ── DB Helpers ────────────────────────────────────────────────────────────────
 
 def _conn():
-    c = sqlite3.connect(str(DB_PATH))
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
+    try:
+        c = sqlite3.connect(str(DB_PATH))
+        c.row_factory = sqlite3.Row
+        c.execute("PRAGMA foreign_keys=ON")
+        return c
+    except sqlite3.OperationalError:
+        # Fallback for read-only filesystems (e.g. Vercel serverless environment)
+        uri = f"file:{DB_PATH}?mode=ro"
+        c = sqlite3.connect(uri, uri=True)
+        c.row_factory = sqlite3.Row
+        return c
 
 
 def _parse_json_col(d: dict, fields: list) -> dict:
