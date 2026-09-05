@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Yojana Sentinel — Application Tracking{% endblock %}
+{% block page_title %}Application Tracking{% endblock %}
+{% block page_subtitle %}Lifecycle state machine · drafted → approved → submitted → pending → resolved{% endblock %}
+
+{% block content %}
+
+<!-- Summary Stats -->
+{% set status_counts = {'drafted':0,'approved':0,'submitted':0,'pending':0,'resolved':0,'rejected':0} %}
+{% for d in all_drafts %}
+  {% if d.status in status_counts %}
+    {% set _ = status_counts.update({d.status: status_counts[d.status] + 1}) %}
+  {% endif %}
+{% endfor %}
+
+<div class="stats-grid mb-32">
+  <div class="stat-card stat-purple" style="animation-delay:0.05s;">
+    <span class="stat-icon">📝</span>
+    <div class="stat-value" data-target="{{ all_drafts | selectattr('status','equalto','drafted') | list | length }}">{{ all_drafts | selectattr('status','equalto','drafted') | list | length }}</div>
+    <div class="stat-label">Drafted</div>
+  </div>
+  <div class="stat-card stat-emerald" style="animation-delay:0.10s;">
+    <span class="stat-icon">✅</span>
+    <div class="stat-value" data-target="{{ all_drafts | selectattr('status','equalto','approved') | list | length }}">{{ all_drafts | selectattr('status','equalto','approved') | list | length }}</div>
+    <div class="stat-label">Approved</div>
+  </div>
+  <div class="stat-card stat-amber" style="animation-delay:0.15s;">
+    <span class="stat-icon">↗️</span>
+    <div class="stat-value" data-target="{{ all_drafts | selectattr('status','equalto','submitted') | list | length }}">{{ all_drafts | selectattr('status','equalto','submitted') | list | length }}</div>
+    <div class="stat-label">Submitted</div>
+  </div>
+  <div class="stat-card stat-cyan" style="animation-delay:0.20s;">
+    <span class="stat-icon">⏳</span>
+    <div class="stat-value" data-target="{{ all_drafts | selectattr('status','equalto','pending') | list | length }}">{{ all_drafts | selectattr('status','equalto','pending') | list | length }}</div>
+    <div class="stat-label">Pending Review</div>
+  </div>
+</div>
+
+<!-- Tracking Cards -->
+{% if not all_drafts %}
+<div class="empty-state">
+  <span class="empty-state-icon">🚚</span>
+  <h2 class="empty-state-title">No Applications Yet</h2>
+  <p class="empty-state-desc">Applications will appear here once drafts are created and approved through the workflow.</p>
+  <a href="{{ url_for('index') }}" class="btn btn-edit">View Pending Approvals</a>
+</div>
+{% else %}
+
+{% set state_order = ['drafted','approved','submitted','pending','resolved'] %}
+{% set state_icons = {'drafted':'📝','approved':'✅','submitted':'↗️','pending':'⏳','resolved':'🏆','rejected':'❌'} %}
+{% set state_labels = {'drafted':'Drafted','approved':'Approved','submitted':'Submitted','pending':'Pending','resolved':'Resolved','rejected':'Rejected'} %}
+
+<div class="card-list">
+{% for d in all_drafts %}
+<div class="card" style="margin-bottom:24px;animation-delay:{{ loop.index0 * 0.07 }}s;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">{{ d.scheme_name }}</div>
+      <div class="card-subtitle">
+        👤 {{ d.profile_name }} &nbsp;·&nbsp;
+        Draft ID: <span class="font-mono">{{ d.draft_id }}</span>
+      </div>
+    </div>
+    <span class="badge badge-{{ d.status }}">{{ state_icons.get(d.status,'') }} {{ state_labels.get(d.status, d.status) | upper }}</span>
+  </div>
+
+  <!-- State Machine Timeline -->
+  <div class="card-body">
+    <div style="margin-bottom:16px;">
+      <div class="tracking-timeline">
+        {% if d.status == 'rejected' %}
+          <!-- Rejected: show linear states up to where we were, then rejected marker -->
+          {% for step in ['drafted','approved','rejected'] %}
+          {% set step_done = (step == 'drafted' and d.status in ['rejected']) or (step == 'approved' and d.status == 'rejected' and d.get('approved_by')) %}
+          {% set step_active = (step == 'rejected' and d.status == 'rejected') %}
+          <div class="timeline-step {% if step_done %}done{% elif step_active %}rejected{% endif %}">
+            <div class="step-node">{{ state_icons.get(step,'?') }}</div>
+            <div class="step-label">{{ state_labels.get(step, step) }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          {% for step in state_order %}
+          {% set step_idx   = loop.index0 %}
+          {% set current_idx = state_order.index(d.status) if d.status in state_order else 0 %}
+          {% set step_done   = step_idx < current_idx %}
+          {% set step_active = step == d.status %}
+          <div class="timeline-step {% if step_done %}done{% elif step_active %}active{% endif %}">
+            <div class="step-node">{{ state_icons.get(step,'?') }}</div>
+            <div class="step-label">{{ state_labels.get(step, step) }}</div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Meta info -->
+    <div class="draft-meta-row" style="margin-bottom:14px;">
+      <div class="draft-meta-item">
+        📅 Drafted: <strong>{{ d.created_at[:16].replace('T', ' ') if d.created_at else '—' }}</strong>
+      </div>
+      <div class="draft-meta-item">
+        👤 Signed off by: <strong>{{ d.approved_by or 'Pending sign-off' }}</strong>
+      </div>
+      {% if d.approved_at %}
+      <div class="draft-meta-item">
+        🕐 Approved: <strong>{{ d.approved_at[:16].replace('T', ' ') }}</strong>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- History -->
+    {% if d.history %}
+    <details>
+      <summary>State transition history ({{ d.history | length }})</summary>
+      <div style="margin-top:10px;padding:12px 16px;background:rgba(0,0,0,0.2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px;">
+          {% for h in (d.history or [])[:5] %}
+          <li style="font-size:0.8rem;color:var(--text-secondary);display:flex;gap:10px;align-items:center;">
+            <span class="font-mono" style="color:var(--text-muted);flex-shrink:0;">{{ h.timestamp[:16].replace('T',' ') if h.timestamp else '' }}</span>
+            <span class="badge badge-{{ h.old_status }}">{{ h.old_status }}</span>
+            <span style="color:var(--text-muted);">→</span>
+            <span class="badge badge-{{ h.new_status }}">{{ h.new_status }}</span>
+            {% if h.note %}<span style="color:var(--text-muted);">·</span> <span style="flex:1;font-size:0.75rem;">{{ h.note[:80] }}</span>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </details>
+    {% endif %}
+  </div>
+
+  <!-- Action form -->
+  <div class="action-bar">
+    {% if d.status == 'approved' %}
+    <form method="POST" action="{{ url_for('update_tracking_status', draft_id=d.draft_id) }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;" data-once>
+      <input type="hidden" name="new_status" value="submitted">
+      <input type="text" name="note" placeholder="Portal reference / submission note" class="form-input" style="width:260px;margin:0;">
+      <button class="btn btn-approve" type="submit">↗️ Mark as Submitted</button>
+    </form>
+
+    {% elif d.status == 'submitted' %}
+    <form method="POST" action="{{ url_for('update_tracking_status', draft_id=d.draft_id) }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;" data-once>
+      <select name="new_status" class="form-select" style="width:180px;margin:0;">
+        <option value="pending">⏳ Pending Portal Review</option>
+        <option value="resolved">✅ Resolved / Granted</option>
+        <option value="rejected">❌ Rejected by Portal</option>
+      </select>
+      <input type="text" name="note" placeholder="Status note" class="form-input" style="width:200px;margin:0;">
+      <button class="btn btn-edit" type="submit">Update Status</button>
+    </form>
+
+    {% elif d.status == 'pending' %}
+    <form method="POST" action="{{ url_for('update_tracking_status', draft_id=d.draft_id) }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;" data-once>
+      <select name="new_status" class="form-select" style="width:180px;margin:0;">
+        <option value="resolved">✅ Resolved / Granted</option>
+        <option value="rejected">❌ Rejected by Portal</option>
+      </select>
+      <input type="text" name="note" placeholder="Final resolution note" class="form-input" style="width:200px;margin:0;">
+      <button class="btn btn-approve" type="submit">Save Resolution</button>
+    </form>
+
+    {% else %}
+    <span style="font-size:0.82rem;color:var(--text-muted);">
+      {{ state_icons.get(d.status,'') }} Status is <strong>{{ state_labels.get(d.status, d.status) }}</strong> — terminal state, no further transitions.
+    </span>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+</div>
+
+{% endif %}
+
+{% endblock %}

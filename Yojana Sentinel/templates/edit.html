@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Draft Fields — Yojana Sentinel{% endblock %}
+{% block page_title %}Edit Application Fields{% endblock %}
+{% block page_subtitle %}Resolve missing parameters · Updates will be logged to audit trail{% endblock %}
+
+{% block content %}
+
+<div style="max-width:800px;">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">✏️ Edit Pre-Filled Field Parameters</div>
+        <div class="card-subtitle">Draft ID: <span class="font-mono">{{ draft.draft_id }}</span></div>
+      </div>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm">← Back</a>
+    </div>
+
+    <form method="POST" data-once>
+      <div class="card-body">
+
+        <!-- Legend -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:12px 16px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <div class="flex-center gap-8" style="font-size:0.78rem;">
+            <span class="field-source-tag field-source-profile">● profile</span>
+            <span style="color:var(--text-muted);">Data auto-filled from citizen profile</span>
+          </div>
+          <div class="flex-center gap-8" style="font-size:0.78rem;">
+            <span class="field-source-tag field-source-inferred">● inferred</span>
+            <span style="color:var(--text-muted);">AI-inferred — review carefully</span>
+          </div>
+          <div class="flex-center gap-8" style="font-size:0.78rem;">
+            <span class="field-source-tag field-source-missing">● missing</span>
+            <span style="color:var(--text-muted);">Required — must be provided</span>
+          </div>
+        </div>
+
+        <!-- Editor name -->
+        <div class="form-group">
+          <label class="form-label">Your Name (for audit record)</label>
+          <input type="text" name="editor_name" class="form-input" value="Family Representative" required>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Field inputs -->
+        {% set src_cls = {'profile':'field-source-profile','inferred':'field-source-inferred','needs_input':'field-source-missing'} %}
+        {% set src_lbl = {'profile':'profile','inferred':'inferred','needs_input':'MISSING'} %}
+
+        {% for f in (draft.filled_fields or []) %}
+        <div class="form-group">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <label class="form-label" style="margin-bottom:0;">{{ f.field_id.replace('_', ' ').title() }}</label>
+            <span class="field-source-tag {{ src_cls.get(f.source, '') }}">{{ src_lbl.get(f.source, f.source) }}</span>
+          </div>
+          <input type="text" name="field_{{ f.field_id }}" class="form-input" value="{{ f.value or '' }}"
+                 {% if f.source == 'needs_input' %}placeholder="Required — please provide this value"{% endif %}>
+          {% if f.source == 'inferred' %}
+          <div style="font-size:0.72rem;color:var(--amber);margin-top:4px;">⚠️ AI-inferred value — please verify before approving.</div>
+          {% elif f.source == 'needs_input' %}
+          <div style="font-size:0.72rem;color:var(--red);margin-top:4px;">✗ This field was missing from the profile. Provide the value to resolve it.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+      </div><!-- /.card-body -->
+
+      <div class="action-bar">
+        <button class="btn btn-edit" type="submit">💾 Save &amp; Return to Review</button>
+        <a class="btn btn-secondary" href="{{ url_for('index') }}" data-no-transition>← Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

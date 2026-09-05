@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Yojana Sentinel — Beneficiary Matching Engine{% endblock %}
+{% block page_title %}Matching Engine{% endblock %}
+{% block page_subtitle %}5-step eligibility evaluation · Hard rules + AI reasoning across all citizen-scheme pairs{% endblock %}
+
+{% block header_actions %}
+<form method="POST" action="{{ url_for('run_matching_route') }}" data-once>
+  <button class="btn btn-edit" type="submit">🔄 Re-run Matching Engine</button>
+</form>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+  <button class="filter-tab active" data-filter="all">All ({{ results | length }})</button>
+  <button class="filter-tab" data-filter="strong_match">✅ Strong Match ({{ results | selectattr('match_status','equalto','strong_match') | list | length }})</button>
+  <button class="filter-tab" data-filter="partial_match">⚠️ Partial Match ({{ results | selectattr('match_status','equalto','partial_match') | list | length }})</button>
+  <button class="filter-tab" data-filter="needs_review">🔍 Needs Review ({{ results | selectattr('match_status','equalto','needs_review') | list | length }})</button>
+  <button class="filter-tab" data-filter="not_eligible">❌ Not Eligible ({{ results | selectattr('match_status','equalto','not_eligible') | list | length }})</button>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid mb-24">
+  <div class="stat-card stat-emerald" style="animation-delay:0.05s;">
+    <span class="stat-icon">✅</span>
+    <div class="stat-value" data-target="{{ results | selectattr('match_status','equalto','strong_match') | list | length }}">{{ results | selectattr('match_status','equalto','strong_match') | list | length }}</div>
+    <div class="stat-label">Strong Matches</div>
+  </div>
+  <div class="stat-card stat-amber" style="animation-delay:0.10s;">
+    <span class="stat-icon">⚠️</span>
+    <div class="stat-value" data-target="{{ results | selectattr('match_status','equalto','partial_match') | list | length }}">{{ results | selectattr('match_status','equalto','partial_match') | list | length }}</div>
+    <div class="stat-label">Partial Matches</div>
+  </div>
+  <div class="stat-card stat-blue" style="animation-delay:0.15s;">
+    <span class="stat-icon">🔍</span>
+    <div class="stat-value" data-target="{{ results | selectattr('match_status','equalto','needs_review') | list | length }}">{{ results | selectattr('match_status','equalto','needs_review') | list | length }}</div>
+    <div class="stat-label">Needs Review</div>
+  </div>
+  <div class="stat-card stat-red" style="animation-delay:0.20s;">
+    <span class="stat-icon">❌</span>
+    <div class="stat-value" data-target="{{ results | selectattr('match_status','equalto','not_eligible') | list | length }}">{{ results | selectattr('match_status','equalto','not_eligible') | list | length }}</div>
+    <div class="stat-label">Not Eligible</div>
+  </div>
+</div>
+
+<!-- Evaluation Matrix -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Evaluation Matrix</div>
+      <div class="card-subtitle">{{ results | length }} citizen–scheme pair(s) evaluated · Sorted by match score</div>
+    </div>
+    <div style="font-size:0.75rem;color:var(--text-muted);">
+      <span class="pulse-dot cyan" style="display:inline-block;margin-right:6px;"></span>
+      Rules engine + LLM verification
+    </div>
+  </div>
+
+  {% if not results %}
+  <div class="empty-state" style="border:none;border-radius:0;">
+    <span class="empty-state-icon">📊</span>
+    <h2 class="empty-state-title">No Match Results Found</h2>
+    <p class="empty-state-desc">Click "Re-run Matching Engine" to evaluate all citizen profiles against the active scheme catalog.</p>
+  </div>
+  {% else %}
+
+  {% set score_colors = {'strong_match':'var(--emerald)','partial_match':'var(--amber)','needs_review':'var(--blue)','not_eligible':'var(--red)'} %}
+  {% set match_cls = {'strong_match':'badge-strong','partial_match':'badge-partial','needs_review':'badge-review','not_eligible':'badge-no'} %}
+  {% set match_label = {'strong_match':'✅ Strong','partial_match':'⚠️ Partial','needs_review':'🔍 Review','not_eligible':'❌ No Match'} %}
+
+  {% for r in results %}
+  <div class="match-item" data-status="{{ r.match_status }}" style="animation-delay:{{ loop.index0 * 0.04 }}s;">
+    <div class="match-header">
+      <div style="flex:1;">
+        <div class="match-names">
+          {{ r.profile_name }} →
+          <span style="color:var(--cyan);">{{ r.scheme_name }}</span>
+        </div>
+        <div class="match-ids">
+          Profile: <span class="font-mono">{{ r.profile_id }}</span> &nbsp;·&nbsp;
+          Scheme: <span class="font-mono">{{ r.scheme_id }}</span>
+        </div>
+      </div>
+
+      <div class="match-score-inline" style="gap:12px;align-items:center;">
+        <div style="text-align:right;">
+          <span class="badge {{ match_cls.get(r.match_status,'badge-review') }}">{{ match_label.get(r.match_status, r.match_status) }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="match-score-inline" style="gap:8px;">
+            <div class="score-bar-wrap">
+              <div class="score-bar-fill" data-score="{{ r.match_score }}"
+                   style="background:{{ score_colors.get(r.match_status,'var(--blue)') }};width:0%;"></div>
+            </div>
+            <span class="score-num" style="color:{{ score_colors.get(r.match_status,'var(--blue)') }};">{{ r.match_score | int }}</span>
+          </div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">/ 100</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Missing info chips -->
+    {% if r.missing_info %}
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+      {% for m in r.missing_info[:5] %}
+      <span style="font-size:0.7rem;padding:2px 8px;border-radius:4px;background:var(--amber-dim);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);">{{ m }}</span>
+      {% endfor %}
+      {% if r.missing_info | length > 5 %}
+      <span style="font-size:0.7rem;color:var(--text-muted);">+{{ r.missing_info | length - 5 }} more</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if r.reasoning %}
+    <details>
+      <summary>Engine Reasoning</summary>
+      <div class="reasoning-box" style="margin-top:8px;">{{ r.reasoning }}</div>
+    </details>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,224 @@
+[
+  {
+    "log_id": "log-0c2bfaf9c2",
+    "draft_id": "draft-59c64dba3dfe",
+    "action": "approve",
+    "actor_name": "Family Representative",
+    "timestamp": "2026-09-05T05:45:24.166174+00:00",
+    "note": "Approved with unresolved fields — human will complete during manual submission.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-b82c7d6f2b",
+    "draft_id": "draft-df4efbdaa6f2",
+    "action": "approve",
+    "actor_name": "Family Representative",
+    "timestamp": "2026-09-04T09:36:00.961441+00:00",
+    "note": "Approved with unresolved fields — human will complete during manual submission.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-ece694806d",
+    "draft_id": "draft-b9645b498942",
+    "action": "approve",
+    "actor_name": "Family Representative",
+    "timestamp": "2026-09-04T09:32:41.332545+00:00",
+    "note": "Approved with unresolved fields — human will complete during manual submission.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-b434878f68",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-04T08:42:53.121235+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-fea783f6a0",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-04T08:42:53.073204+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-9573b2d858",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-04T08:42:53.026551+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-e8698383cb",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:25:33.377525+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-83a002c8d6",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:25:33.264779+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-379739f14b",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:25:33.187516+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-d55dc5d100",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:01:00.262631+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-791c96b58b",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:01:00.197498+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-2b9e4c65cc",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T11:01:00.147210+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-f4c65b2a8c",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:37:18.321950+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-d03bf46c76",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:37:18.199349+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-e709f471c1",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:37:18.046748+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-47b3d013d9",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:33.670717+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-0b11a2ada3",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:33.579908+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-e783c6c6d2",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:33.505912+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-48b9177d25",
+    "draft_id": "test-draft-999",
+    "action": "edit",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:05.541492+00:00",
+    "note": "Edited fields: applicant_name. Unresolved now: 0.",
+    "extra": {
+      "edited_field_ids": [
+        "applicant_name"
+      ]
+    }
+  },
+  {
+    "log_id": "log-d956151e30",
+    "draft_id": "test-draft-999",
+    "action": "reject",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:05.466879+00:00",
+    "note": "No longer interested",
+    "extra": {}
+  },
+  {
+    "log_id": "log-b59f0d1414",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:32:05.393715+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-b3433f9ac4",
+    "draft_id": "test-draft-999",
+    "action": "approve",
+    "actor_name": "Vikram (Son)",
+    "timestamp": "2026-09-03T10:31:29.371210+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  }
+]

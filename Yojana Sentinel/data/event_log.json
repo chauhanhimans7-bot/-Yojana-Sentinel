@@ -1,0 +1,303 @@
+[
+  {
+    "event_id": "evt-02b6399bd155",
+    "event_type": "deadline_approaching",
+    "scheme_id": "ayushman-bharat-pmjay-2026",
+    "detected_at": "2026-09-05T05:44:39.803352+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'Ayushman Bharat — PM Jan Arogya Yojana (PMJAY)' issued by National Health Authority, Ministry of Health and Family Welfare. Deadline: no deadline. Event injected at 2026-09-05 05:44 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-3dae36e300ca",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-04T09:31:37.026410+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Deadline: 2026-09-14. Event injected at 2026-09-04 09:31 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-1bfd0640ffe0",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-sc-postmatric-scholarship-2026",
+    "detected_at": "2026-09-04T08:45:13.724289+00:00",
+    "detail": "Deadline alert: 'UP Post-Matric Scholarship for SC/ST Students' deadline is 2026-09-10 — 6 day(s) from today. Window: 14 days."
+  },
+  {
+    "event_id": "evt-0ab77e472a15",
+    "event_type": "new_scheme",
+    "scheme_id": "up-vridha-pension-2026",
+    "detected_at": "2026-09-04T08:45:13.604488+00:00",
+    "detail": "New scheme detected: 'UP Vridhavastha Pension Yojana (State Old Age Pension)' issued by Uttar Pradesh Social Welfare Department. Category: health."
+  },
+  {
+    "event_id": "evt-73d084a1a3cb",
+    "event_type": "new_scheme",
+    "scheme_id": "nsap-national-2026",
+    "detected_at": "2026-09-04T08:45:13.457234+00:00",
+    "detail": "New scheme detected: 'National Social Assistance Programme (NSAP) — Old Age Pension' issued by Ministry of Rural Development, Government of India. Category: health."
+  },
+  {
+    "event_id": "evt-4d3470a0be32",
+    "event_type": "new_scheme",
+    "scheme_id": "up-mahila-samarthya-2026",
+    "detected_at": "2026-09-04T08:45:13.380397+00:00",
+    "detail": "New scheme detected: 'UP Mahila Samarthya Yojana' issued by Uttar Pradesh Women and Child Development Department. Category: health."
+  },
+  {
+    "event_id": "evt-c3b6bee51289",
+    "event_type": "new_scheme",
+    "scheme_id": "ayushman-bharat-pmjay-2026",
+    "detected_at": "2026-09-04T08:45:13.356009+00:00",
+    "detail": "New scheme detected: 'Ayushman Bharat — PM Jan Arogya Yojana (PMJAY)' issued by National Health Authority, Ministry of Health and Family Welfare. Category: health."
+  },
+  {
+    "event_id": "evt-9e5429329cef",
+    "event_type": "new_scheme",
+    "scheme_id": "kcc-national-2026",
+    "detected_at": "2026-09-04T08:45:13.330764+00:00",
+    "detail": "New scheme detected: 'Kisan Credit Card (KCC) Scheme' issued by Ministry of Agriculture & Farmers Welfare / NABARD, Government of India. Category: agriculture."
+  },
+  {
+    "event_id": "evt-01f2d954d2e8",
+    "event_type": "new_scheme",
+    "scheme_id": "up-free-school-uniform-2026",
+    "detected_at": "2026-09-04T08:45:13.304910+00:00",
+    "detail": "New scheme detected: 'UP Free School Uniform & Books Scheme' issued by Uttar Pradesh Basic Education Department. Category: education."
+  },
+  {
+    "event_id": "evt-d7e5543e48d4",
+    "event_type": "new_scheme",
+    "scheme_id": "national-food-security-act-2026",
+    "detected_at": "2026-09-04T08:45:13.280540+00:00",
+    "detail": "New scheme detected: 'National Food Security Act (NFSA) — PDS Ration' issued by Ministry of Consumer Affairs, Food and Public Distribution, Government of India. Category: health."
+  },
+  {
+    "event_id": "evt-b86d86780243",
+    "event_type": "new_scheme",
+    "scheme_id": "up-sc-postmatric-scholarship-2026",
+    "detected_at": "2026-09-04T08:45:13.226808+00:00",
+    "detail": "New scheme detected: 'UP Post-Matric Scholarship for SC/ST Students' issued by Uttar Pradesh Social Welfare Department. Category: education."
+  },
+  {
+    "event_id": "evt-9bcfd97b5254",
+    "event_type": "new_scheme",
+    "scheme_id": "up-kisan-karj-rahat-2026",
+    "detected_at": "2026-09-04T08:45:13.189208+00:00",
+    "detail": "New scheme detected: 'UP Kisan Karj Rahat (Farmer Loan Waiver Scheme)' issued by Uttar Pradesh Government. Category: agriculture."
+  },
+  {
+    "event_id": "evt-5734f6d9bbf2",
+    "event_type": "new_scheme",
+    "scheme_id": "pmmvy-national-2026",
+    "detected_at": "2026-09-04T08:45:13.145150+00:00",
+    "detail": "New scheme detected: 'Pradhan Mantri Matru Vandana Yojana (PMMVY)' issued by Ministry of Women and Child Development, Government of India. Category: health."
+  },
+  {
+    "event_id": "evt-12471bc5e55f",
+    "event_type": "new_scheme",
+    "scheme_id": "pm-kisan-national-2026",
+    "detected_at": "2026-09-04T08:45:13.080658+00:00",
+    "detail": "New scheme detected: 'PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)' issued by Ministry of Agriculture & Farmers Welfare, Government of India. Category: agriculture."
+  },
+  {
+    "event_id": "evt-78c8b4129a1f",
+    "event_type": "new_scheme",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-04T08:45:13.056181+00:00",
+    "detail": "New scheme detected: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Category: education."
+  },
+  {
+    "event_id": "evt-d70e69123d25",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-04T08:42:53.194395+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-68b567c7c350",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-04T08:42:53.177007+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-7329ac221e4a",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-04T08:42:53.162080+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-0f866ba387e5",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:25:33.546406+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-8185edf4d223",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:25:33.502663+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-8248efd462d7",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:25:33.472724+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-634f0459fd27",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-03T11:04:22.583973+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Deadline: 2026-09-14. Event injected at 2026-09-03 11:04 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-0b770533e6c3",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:01:00.345835+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-606f8ba9c238",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:01:00.320875+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-5b09136d4a5f",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T11:01:00.307499+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-4fdcbbb8937e",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-03T10:42:54.344942+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Deadline: 2026-09-14. Event injected at 2026-09-03 10:42 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-44ebf643bc15",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:37:18.445826+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-82ea7ce4296b",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:37:18.406545+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-dfcff8e2ff39",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:37:18.385393+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-ffc4ec875c3e",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-03T10:37:05.290797+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Deadline: 2026-09-14. Event injected at 2026-09-03 10:37 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-66e6cced0f11",
+    "event_type": "deadline_approaching",
+    "scheme_id": "up-scholarship-obc-2026",
+    "detected_at": "2026-09-03T10:36:29.533435+00:00",
+    "detail": "[DEMO TRIGGER] Deadline alert: 'UP Pre-Matric & Post-Matric Scholarship for OBC Students' issued by Uttar Pradesh Social Welfare Department. Deadline: 2026-09-14. Event injected at 2026-09-03 10:36 UTC for demo purposes."
+  },
+  {
+    "event_id": "evt-fabfb57f1400",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:33.796122+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-1c3367d769ea",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:33.760964+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-b3d00b7abbe7",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:33.737304+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-1f034b95cc52",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:05.870085+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-2f0eff0c4368",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:05.842979+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-9bb0f37ec72d",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:32:05.832682+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-30e90b208e9f",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:29.577732+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-679b74e7f81c",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:29.556686+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-62524c7ce285",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:29.547532+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  },
+  {
+    "event_id": "evt-e75c61f46ce7",
+    "event_type": "scheme_updated",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:05.581272+00:00",
+    "detail": "Scheme updated: 'Updated Scheme'. Changes: deadline moved from 2026-09-10 to 2026-09-25; required_documents changed."
+  },
+  {
+    "event_id": "evt-1ed1432fc51b",
+    "event_type": "scheme_closed",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:05.561845+00:00",
+    "detail": "Scheme closed: 'Closed Scheme' status changed from active to closed. Deadline was 2026-12-31."
+  },
+  {
+    "event_id": "evt-10015a66fd5f",
+    "event_type": "new_scheme",
+    "scheme_id": "s-diff-101",
+    "detected_at": "2026-09-03T10:31:05.553534+00:00",
+    "detail": "New scheme detected: 'New Agri Scheme' issued by UP Govt. Category: agriculture."
+  }
+]
