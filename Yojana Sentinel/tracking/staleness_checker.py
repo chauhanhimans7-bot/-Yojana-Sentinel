@@ -15,6 +15,8 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT       = Path(__file__).resolve().parent.parent
@@ -70,17 +72,15 @@ def find_stale_drafts(threshold_days: int | None = None) -> list[dict]:
     stale_items = []
 
     try:
-        conn = sqlite3.connect(str(DB_PATH))
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            """SELECT d.draft_id, d.profile_id, d.scheme_id, d.status, d.created_at,
-                      s.name as scheme_name, p.display_name as profile_name
-               FROM application_draft d
-               LEFT JOIN scheme s ON d.scheme_id = s.scheme_id
-               LEFT JOIN citizen_profile p ON d.profile_id = p.profile_id
-               WHERE d.status IN ('submitted', 'pending')"""
-        ).fetchall()
-        conn.close()
+        with get_db() as db:
+            rows = db.fetchall(
+                """SELECT d.draft_id, d.profile_id, d.scheme_id, d.status, d.created_at,
+                          s.name as scheme_name, p.display_name as profile_name
+                   FROM application_draft d
+                   LEFT JOIN scheme s ON d.scheme_id = s.scheme_id
+                   LEFT JOIN citizen_profile p ON d.profile_id = p.profile_id
+                   WHERE d.status IN ('submitted', 'pending')"""
+            )
 
         for r in rows:
             did = r["draft_id"]

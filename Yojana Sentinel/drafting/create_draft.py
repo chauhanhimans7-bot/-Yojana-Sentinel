@@ -29,6 +29,7 @@ from pathlib import Path
 
 from drafting.field_mapper import map_fields
 from drafting.draft_writer import generate_draft_text, DraftWriterError
+from db.database import get_db
 
 log = logging.getLogger(__name__)
 
@@ -44,18 +45,11 @@ class DraftCreationError(Exception):
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
-def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(str(DB_PATH))
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
-
-
 def _get_existing_draft(profile_id: str, scheme_id: str) -> dict | None:
     """Return the most recent drafted ApplicationDraft for this pair, or None."""
     try:
-        with _conn() as conn:
-            row = conn.execute(
+        with get_db() as db:
+            row = db.execute(
                 """SELECT * FROM application_draft
                    WHERE profile_id=? AND scheme_id=? AND status='drafted'
                    ORDER BY created_at DESC LIMIT 1""",
@@ -78,8 +72,8 @@ def _get_existing_draft(profile_id: str, scheme_id: str) -> dict | None:
 def _save_draft(draft: dict) -> None:
     """Insert a new ApplicationDraft into the DB."""
     try:
-        with _conn() as conn:
-            conn.execute(
+        with get_db() as db:
+            db.execute(
                 """INSERT INTO application_draft
                    (draft_id, profile_id, scheme_id, filled_fields,
                     unresolved_fields, draft_text, status, created_at,

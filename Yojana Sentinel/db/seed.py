@@ -1,15 +1,8 @@
 """
-db/seed.py
+db/seed.py — Unified Database Seeder
 
-Loads data/schemes_seed.json (and optionally data/scraped_normalized.json)
-into the SQLite database.
-
-Rules:
-  - Upserts on scheme_id (INSERT OR REPLACE) — safe to re-run multiple times.
-  - Nested fields (eligibility_rules, required_documents, etc.) are serialized
-    to JSON strings for storage in TEXT columns.
-  - Handles missing or malformed records with a warning rather than crashing.
-  - Also seeds CitizenProfile records from data/profiles_seed.json.
+Loads data/schemes_seed.json and data/profiles_seed.json into the target DB
+(Supabase PostgreSQL or local SQLite) using ANSI-compliant ON CONFLICT queries.
 
 Run:
     python -m db.seed
@@ -19,11 +12,11 @@ or:
 
 import json
 import logging
-import sqlite3
 import sys
 from pathlib import Path
 
-# ── Logging ──────────────────────────────────────────────────────────────────
+from db.database import get_db
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -31,48 +24,40 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT         = Path(__file__).resolve().parent.parent
-DB_PATH      = ROOT / "data" / "yojana_sentinel.db"
-SCHEMA_PATH  = ROOT / "db" / "schema.sql"
-SCHEMES_SEED = ROOT / "data" / "schemes_seed.json"
+ROOT          = Path(__file__).resolve().parent.parent
+SCHEMA_PATH   = ROOT / "db" / "schema.sql"
+SCHEMES_SEED  = ROOT / "data" / "schemes_seed.json"
 PROFILES_SEED = ROOT / "data" / "profiles_seed.json"
-SCRAPED_NORM = ROOT / "data" / "scraped_normalized.json"
+SCRAPED_NORM  = ROOT / "data" / "scraped_normalized.json"
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _json(val) -> str:
-    """Serialize a value to JSON string for SQLite TEXT column."""
+    """Serialize a value to JSON string for TEXT columns."""
     return json.dumps(val, ensure_ascii=False)
 
 
-def connect() -> sqlite3.Connection:
-    """Open (or create) the SQLite DB and apply the schema."""
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys=ON")
-
-    with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
-        conn.executescript(f.read())
-
-    log.info("Database ready: %s", DB_PATH)
-    return conn
-
-
-def upsert_schemes(conn: sqlite3.Connection, schemes: list[dict]) -> int:
+def upsert_schemes(db, schemes: list[dict]) -> int:
     """
-    Insert or replace scheme records. Returns the number of rows upserted.
-    Skips records with missing scheme_id or name.
+    Insert or update scheme records using ANSI ON CONFLICT.
     """
     sql = """
-        INSERT OR REPLACE INTO scheme (
+        INSERT INTO scheme (
             scheme_id, name, issuing_body, category, description,
             eligibility_rules, required_documents, application_fields,
             deadline, source_url, last_verified_at, status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (scheme_id) DO UPDATE SET
+            name = EXCLUDED.name,
+            issuing_body = EXCLUDED.issuing_body,
+            category = EXCLUDED.category,
+            description = EXCLUDED.description,
+            eligibility_rules = EXCLUDED.eligibility_rules,
+            required_documents = EXCLUDED.required_documents,
+            application_fields = EXCLUDED.application_fields,
+            deadline = EXCLUDED.deadline,
+            source_url = EXCLUDED.source_url,
+            last_verified_at = EXCLUDED.last_verified_at,
+            status = EXCLUDED.status
     """
     count = 0
     skipped = 0
@@ -80,17 +65,12 @@ def upsert_schemes(conn: sqlite3.Connection, schemes: list[dict]) -> int:
         scheme_id = s.get("scheme_id")
         name      = s.get("name")
 
-        if not scheme_id:
-            log.warning("Scheme missing scheme_id — skipped: %s", name or "<no name>")
-            skipped += 1
-            continue
-        if not name:
-            log.warning("Scheme '%s' missing name — skipped.", scheme_id)
+        if not scheme_id or not name:
             skipped += 1
             continue
 
         try:
-            conn.execute(sql, (
+            db.execute(sql, (
                 scheme_id,
                 name,
                 s.get("issuing_body"),
@@ -105,38 +85,49 @@ def upsert_schemes(conn: sqlite3.Connection, schemes: list[dict]) -> int:
                 s.get("status", "active"),
             ))
             count += 1
-        except sqlite3.IntegrityError as exc:
-            log.warning("IntegrityError inserting scheme '%s': %s", scheme_id, exc)
+        except Exception as exc:
+            log.warning("Error inserting scheme '%s': %s", scheme_id, exc)
             skipped += 1
 
-    conn.commit()
     log.info("Schemes: %d upserted, %d skipped.", count, skipped)
     return count
 
 
-def upsert_profiles(conn: sqlite3.Connection, profiles: list[dict]) -> int:
+def upsert_profiles(db, profiles: list[dict]) -> int:
     """
-    Insert or replace CitizenProfile records.
-    Skips internal fields prefixed with '_' (like _backstory).
+    Insert or update CitizenProfile records using ANSI ON CONFLICT.
     """
     sql = """
-        INSERT OR REPLACE INTO citizen_profile (
+        INSERT INTO citizen_profile (
             profile_id, display_name, age, gender, state, district,
             annual_income, category, occupation, owns_land, family_status,
             documents_available, language_preference, managed_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (profile_id) DO UPDATE SET
+            display_name = EXCLUDED.display_name,
+            age = EXCLUDED.age,
+            gender = EXCLUDED.gender,
+            state = EXCLUDED.state,
+            district = EXCLUDED.district,
+            annual_income = EXCLUDED.annual_income,
+            category = EXCLUDED.category,
+            occupation = EXCLUDED.occupation,
+            owns_land = EXCLUDED.owns_land,
+            family_status = EXCLUDED.family_status,
+            documents_available = EXCLUDED.documents_available,
+            language_preference = EXCLUDED.language_preference,
+            managed_by = EXCLUDED.managed_by
     """
     count = 0
     skipped = 0
     for p in profiles:
         pid = p.get("profile_id")
         if not pid:
-            log.warning("Profile missing profile_id — skipped.")
             skipped += 1
             continue
 
         try:
-            conn.execute(sql, (
+            db.execute(sql, (
                 pid,
                 p.get("display_name", ""),
                 p.get("age"),
@@ -153,64 +144,51 @@ def upsert_profiles(conn: sqlite3.Connection, profiles: list[dict]) -> int:
                 p.get("managed_by"),
             ))
             count += 1
-        except sqlite3.IntegrityError as exc:
-            log.warning("IntegrityError inserting profile '%s': %s", pid, exc)
+        except Exception as exc:
+            log.warning("Error inserting profile '%s': %s", pid, exc)
             skipped += 1
 
-    conn.commit()
     log.info("Profiles: %d upserted, %d skipped.", count, skipped)
     return count
 
 
 def load_json(path: Path) -> list[dict]:
-    """Load a JSON array from a file. Returns [] and logs if unavailable."""
     if not path.exists():
-        log.warning("File not found, skipping: %s", path)
         return []
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        if not isinstance(data, list):
-            log.error("Expected a JSON array in %s — got %s.", path, type(data).__name__)
-            return []
-        return data
-    except json.JSONDecodeError as exc:
-        log.error("Failed to parse %s: %s", path, exc)
+        return data if isinstance(data, list) else []
+    except Exception:
         return []
 
 
 def run(include_scraped: bool = False) -> None:
-    conn = connect()
+    with get_db() as db:
+        # Initialize schema if local SQLite
+        if not db.is_postgres and SCHEMA_PATH.exists():
+            with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
+                db.conn.executescript(f.read())
 
-    # ── Seed schemes ──────────────────────────────────────────────────────────
-    seed_schemes = load_json(SCHEMES_SEED)
-    if not seed_schemes:
-        log.error("No seed schemes found. Aborting seed.")
-        conn.close()
-        return
-    n_seed = upsert_schemes(conn, seed_schemes)
+        seed_schemes = load_json(SCHEMES_SEED)
+        n_seed = upsert_schemes(db, seed_schemes)
 
-    # ── Optionally include scraped data ───────────────────────────────────────
-    n_scraped = 0
-    if include_scraped:
-        scraped = load_json(SCRAPED_NORM)
-        if scraped:
-            n_scraped = upsert_schemes(conn, scraped)
-        else:
-            log.info("No scraped normalized data found — skipping.")
+        n_scraped = 0
+        if include_scraped:
+            scraped = load_json(SCRAPED_NORM)
+            if scraped:
+                n_scraped = upsert_schemes(db, scraped)
 
-    # ── Seed profiles ──────────────────────────────────────────────────────────
-    profiles = load_json(PROFILES_SEED)
-    n_profiles = upsert_profiles(conn, profiles)
+        profiles = load_json(PROFILES_SEED)
+        n_profiles = upsert_profiles(db, profiles)
 
-    conn.close()
+        db.commit()
 
     print("\n✅  Seed complete.")
     print(f"   Schemes from seed:    {n_seed}")
     if include_scraped:
         print(f"   Schemes from scraper: {n_scraped}")
     print(f"   Citizen profiles:     {n_profiles}")
-    print(f"   Database:             {DB_PATH}")
 
 
 if __name__ == "__main__":

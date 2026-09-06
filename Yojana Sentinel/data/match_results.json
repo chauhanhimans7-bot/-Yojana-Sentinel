@@ -9,7 +9,7 @@
       "MISSING_DOCUMENT: institution enrollment certificate"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[PASS] state\n[PASS] income\n[PASS] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 67/100\n  → MISSING_DOCUMENT: marksheet of previous qualifying exam\n  → MISSING_DOCUMENT: institution enrollment certificate\n[UNCLEAR] other_condition: 'Student must be enrolled in a recognized institution in UP' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Must not be availing any other scholarship simultaneously' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Minimum 50% attendance in the previous academic year' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=67",
-    "evaluated_at": "2026-09-05T05:18:15.429896+00:00"
+    "evaluated_at": "2026-09-06T09:13:34.821859+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -18,7 +18,7 @@
     "match_status": "needs_review",
     "missing_info": [],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[PASS] occupation\n[NOT_APPLICABLE] gender\n[PASS] land_ownership\n[DOCUMENT_SCORE] 100/100\n[UNCLEAR] other_condition: 'Cultivable land must be in the name of the applicant or family member' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Institutional landholders, government employees, income taxpayers, and professio' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=79",
-    "evaluated_at": "2026-09-05T05:18:19.139256+00:00"
+    "evaluated_at": "2026-09-06T09:13:40.105500+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -29,7 +29,7 @@
       "MISSING_DOCUMENT: MCP card (Mother and Child Protection card)"
     ],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[PASS] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 80/100\n  → MISSING_DOCUMENT: MCP card (Mother and Child Protection card)\n[UNCLEAR] other_condition: 'Applicable only for first live birth' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Woman must not be a central or state government employee' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Must be registered at an Anganwadi Centre or health facility' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Bank account must be in the beneficiary woman's own name' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=79",
-    "evaluated_at": "2026-09-05T05:18:19.389635+00:00"
+    "evaluated_at": "2026-09-06T09:13:40.519608+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -42,7 +42,7 @@
       "MISSING_DOCUMENT: ration card"
     ],
     "reasoning": "[PASS] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[PASS] occupation\n[NOT_APPLICABLE] gender\n[PASS] land_ownership\n[DOCUMENT_SCORE] 25/100\n  → MISSING_DOCUMENT: bank loan account details\n  → MISSING_DOCUMENT: land record (khasra)\n  → MISSING_DOCUMENT: ration card\n[UNCLEAR] other_condition: 'Loan must have been taken from UP cooperative bank or regional rural bank' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Defaulted crop loan up to ₹1 lakh as on 31 March 2016 is eligible' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Farmer must be a resident of Uttar Pradesh' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=25",
-    "evaluated_at": "2026-09-05T05:18:19.860825+00:00"
+    "evaluated_at": "2026-09-06T09:13:41.196802+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -53,7 +53,7 @@
       "FAILED_RULE: category"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[PASS] state\n[PASS] income\n[FAIL] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:20.173394+00:00"
+    "evaluated_at": "2026-09-06T09:13:42.942582+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -64,7 +64,7 @@
       "MISSING_DOCUMENT: existing ration card or new application with proof of residence"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 50/100\n  → MISSING_DOCUMENT: existing ration card or new application with proof of residence\n[UNCLEAR] other_condition: 'Must be identified as eligible household by State Government' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Name must appear on the state ration card database' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Exclusion criteria apply: income taxpayers, government employees, 4+ wheeled veh' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=50",
-    "evaluated_at": "2026-09-05T05:18:20.176292+00:00"
+    "evaluated_at": "2026-09-06T09:13:43.283572+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -75,7 +75,7 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:20.720597+00:00"
+    "evaluated_at": "2026-09-06T09:13:45.312437+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -87,7 +87,7 @@
       "MISSING_DOCUMENT: bank account details"
     ],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[PASS] occupation\n[NOT_APPLICABLE] gender\n[PASS] land_ownership\n[DOCUMENT_SCORE] 50/100\n  → MISSING_DOCUMENT: passport size photograph\n  → MISSING_DOCUMENT: bank account details\n[UNCLEAR] other_condition: 'Farmer must be owner-cultivator, tenant farmer, oral lessee, or share cropper' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Must have bank account in the disbursing bank' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Credit limit based on land holding and crop pattern' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=50",
-    "evaluated_at": "2026-09-05T05:18:20.725658+00:00"
+    "evaluated_at": "2026-09-06T09:13:46.278292+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -99,7 +99,7 @@
       "MISSING_DOCUMENT: PMJAY eligibility letter or e-card"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 33/100\n  → MISSING_DOCUMENT: ration card\n  → MISSING_DOCUMENT: PMJAY eligibility letter or e-card\n[UNCLEAR] other_condition: 'Household must be listed in SECC 2011 deprivation / occupational criteria' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Household without a kuccha or pakka wall or roof (rural), or specific occupation' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'No income ceiling — purely deprivation index based' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=33",
-    "evaluated_at": "2026-09-05T05:18:21.036462+00:00"
+    "evaluated_at": "2026-09-06T09:13:51.971835+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -110,7 +110,7 @@
       "MISSING_DOCUMENT: residence proof"
     ],
     "reasoning": "[PASS] age\n[PASS] state\n[PASS] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[PASS] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 75/100\n  → MISSING_DOCUMENT: residence proof\n[UNCLEAR] other_condition: 'Must be a permanent resident of UP' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Priority given to widows, differently-abled women, and SC/ST women' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=75",
-    "evaluated_at": "2026-09-05T05:18:22.509414+00:00"
+    "evaluated_at": "2026-09-06T09:13:54.324125+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -121,7 +121,7 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.935570+00:00"
+    "evaluated_at": "2026-09-06T09:13:54.727616+00:00"
   },
   {
     "profile_id": "profile-001",
@@ -132,7 +132,7 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.937523+00:00"
+    "evaluated_at": "2026-09-06T09:13:55.292610+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -143,7 +143,7 @@
       "FAILED_RULE: category"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[PASS] state\n[PASS] income\n[FAIL] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.940096+00:00"
+    "evaluated_at": "2026-09-06T09:13:55.430916+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -155,7 +155,7 @@
       "FAILED_RULE: land_ownership"
     ],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[FAIL] occupation\n[NOT_APPLICABLE] gender\n[FAIL] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.941539+00:00"
+    "evaluated_at": "2026-09-06T09:13:55.554260+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -166,7 +166,7 @@
       "FAILED_RULE: gender"
     ],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[FAIL] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.943154+00:00"
+    "evaluated_at": "2026-09-06T09:13:55.676527+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -178,7 +178,7 @@
       "FAILED_RULE: land_ownership"
     ],
     "reasoning": "[PASS] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[FAIL] occupation\n[NOT_APPLICABLE] gender\n[FAIL] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:22.946436+00:00"
+    "evaluated_at": "2026-09-06T09:13:56.194125+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -193,7 +193,7 @@
       "MISSING_DOCUMENT: enrollment certificate"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[PASS] state\n[PASS] income\n[PASS] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 17/100\n  → MISSING_DOCUMENT: income certificate\n  → MISSING_DOCUMENT: caste certificate\n  → MISSING_DOCUMENT: previous marksheet\n  → MISSING_DOCUMENT: bank passbook\n  → MISSING_DOCUMENT: enrollment certificate\n[UNCLEAR] other_condition: 'Must be enrolled in a UP state-recognized institution' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Not availing any other scholarship' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Regular student with satisfactory attendance' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=17",
-    "evaluated_at": "2026-09-05T05:18:22.948655+00:00"
+    "evaluated_at": "2026-09-06T09:13:56.353339+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -202,7 +202,7 @@
     "match_status": "needs_review",
     "missing_info": [],
     "reasoning": "[NOT_APPLICABLE] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 100/100\n[UNCLEAR] other_condition: 'Must be identified as eligible household by State Government' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Name must appear on the state ration card database' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Exclusion criteria apply: income taxpayers, government employees, 4+ wheeled veh' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=79",
-    "evaluated_at": "2026-09-05T05:18:23.267510+00:00"
+    "evaluated_at": "2026-09-06T09:13:56.781395+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -213,7 +213,7 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:23.635350+00:00"
+    "evaluated_at": "2026-09-06T09:13:57.221436+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -225,7 +225,7 @@
       "FAILED_RULE: land_ownership"
     ],
     "reasoning": "[PASS] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[FAIL] occupation\n[NOT_APPLICABLE] gender\n[FAIL] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:23.639631+00:00"
+    "evaluated_at": "2026-09-06T09:13:57.345781+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -236,7 +236,7 @@
       "MISSING_DOCUMENT: PMJAY eligibility letter or e-card"
     ],
     "reasoning": "[NOT_APPLICABLE] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 67/100\n  → MISSING_DOCUMENT: PMJAY eligibility letter or e-card\n[UNCLEAR] other_condition: 'Household must be listed in SECC 2011 deprivation / occupational criteria' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'Household without a kuccha or pakka wall or roof (rural), or specific occupation' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\n[UNCLEAR] other_condition: 'No income ceiling — purely deprivation index based' — LLM call failed (NotFoundError): Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Condition requires manual review.\nFINAL: status=needs_review, score=67",
-    "evaluated_at": "2026-09-05T05:18:23.644827+00:00"
+    "evaluated_at": "2026-09-06T09:13:57.478976+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -247,7 +247,7 @@
       "FAILED_RULE: gender"
     ],
     "reasoning": "[PASS] age\n[PASS] state\n[PASS] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[FAIL] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:24.608506+00:00"
+    "evaluated_at": "2026-09-06T09:13:58.305619+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -258,7 +258,7 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[NOT_APPLICABLE] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:24.615343+00:00"
+    "evaluated_at": "2026-09-06T09:13:58.443328+00:00"
   },
   {
     "profile_id": "profile-002",
@@ -269,6 +269,6 @@
       "FAILED_RULE: age"
     ],
     "reasoning": "[FAIL] age\n[PASS] state\n[NOT_APPLICABLE] income\n[NOT_APPLICABLE] category\n[NOT_APPLICABLE] occupation\n[NOT_APPLICABLE] gender\n[NOT_APPLICABLE] land_ownership\n[DOCUMENT_SCORE] 0/100\nFINAL: status=not_eligible, score=0",
-    "evaluated_at": "2026-09-05T05:18:24.617465+00:00"
+    "evaluated_at": "2026-09-06T09:13:58.566625+00:00"
   }
 ]

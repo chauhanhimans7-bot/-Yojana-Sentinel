@@ -23,6 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT          = Path(__file__).resolve().parent.parent
@@ -31,13 +33,6 @@ LOG_JSON_PATH = ROOT / "data" / "event_log.json"
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
-
-def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(str(DB_PATH))
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
-
 
 def _make_event_id() -> str:
     return f"evt-{uuid.uuid4().hex[:12]}"
@@ -77,9 +72,9 @@ def append(
 
     # ── DB insert ─────────────────────────────────────────────────────────────
     try:
-        with _conn() as conn:
-            conn.execute(
-                """INSERT OR IGNORE INTO monitoring_event
+        with get_db() as db:
+            db.execute(
+                """INSERT INTO monitoring_event
                    (event_id, event_type, scheme_id, detected_at, detail)
                    VALUES (?, ?, ?, ?, ?)""",
                 (event["event_id"], event["event_type"], event["scheme_id"],
@@ -121,8 +116,8 @@ def get_events(
     params.append(limit)
 
     try:
-        with _conn() as conn:
-            rows = conn.execute(sql, params).fetchall()
+        with get_db() as db:
+            rows = db.fetchall(sql, params)
         return [dict(r) for r in rows]
     except Exception as exc:
         log.warning("DB query failed: %s — falling back to JSON log.", exc)
@@ -155,10 +150,10 @@ def all_events(source: str = "db") -> list[dict]:
             return []
 
     try:
-        with _conn() as conn:
-            rows = conn.execute(
+        with get_db() as db:
+            rows = db.fetchall(
                 "SELECT * FROM monitoring_event ORDER BY detected_at DESC"
-            ).fetchall()
+            )
         return [dict(r) for r in rows]
     except Exception as exc:
         log.warning("DB events query failed (%s). Falling back to JSON.", exc)
@@ -171,8 +166,8 @@ def clear_deadline_alerts(scheme_id: str) -> None:
     Only used in test/reset utilities — never called by production scheduler.
     """
     try:
-        with _conn() as conn:
-            conn.execute(
+        with get_db() as db:
+            db.execute(
                 "DELETE FROM monitoring_event WHERE scheme_id=? AND event_type='deadline_approaching'",
                 (scheme_id,),
             )

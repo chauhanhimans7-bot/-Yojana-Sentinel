@@ -33,6 +33,8 @@ from matching.run_matching import run as run_matching_engine
 from tracking.status_store import update_status, mark_submitted, unmark_submitted, get_transition_history, StatusTrackingError
 from tracking.staleness_checker import find_stale_drafts
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT    = Path(__file__).resolve().parent.parent
@@ -48,20 +50,6 @@ app.secret_key = "yojana-sentinel-dev-key"
 
 # ── DB Helpers ────────────────────────────────────────────────────────────────
 
-def _conn():
-    try:
-        c = sqlite3.connect(str(DB_PATH))
-        c.row_factory = sqlite3.Row
-        c.execute("PRAGMA foreign_keys=ON")
-        return c
-    except sqlite3.OperationalError:
-        # Fallback for read-only filesystems (e.g. Vercel serverless environment)
-        uri = f"file:{DB_PATH}?mode=ro"
-        c = sqlite3.connect(uri, uri=True)
-        c.row_factory = sqlite3.Row
-        return c
-
-
 def _parse_json_col(d: dict, fields: list) -> dict:
     for f in fields:
         if isinstance(d.get(f), str):
@@ -73,23 +61,23 @@ def _parse_json_col(d: dict, fields: list) -> dict:
 
 
 def load_drafts(status_filter: str = None) -> list[dict]:
-    """Load ApplicationDrafts from SQLite with profile and scheme details."""
+    """Load ApplicationDrafts from DB with profile and scheme details."""
     drafts = []
     try:
         where_clause = f"WHERE status='{status_filter}'" if status_filter else ""
-        with _conn() as conn:
-            rows = conn.execute(
+        with get_db() as db:
+            rows = db.fetchall(
                 f"SELECT * FROM application_draft {where_clause} ORDER BY created_at DESC"
-            ).fetchall()
+            )
 
             for row in rows:
                 d = _parse_json_col(dict(row), ["filled_fields", "unresolved_fields"])
 
                 # Attach scheme info
-                scheme_row = conn.execute(
+                scheme_row = db.fetchone(
                     "SELECT name, deadline, source_url, category, issuing_body FROM scheme WHERE scheme_id=?",
                     (d["scheme_id"],)
-                ).fetchone()
+                )
                 d["scheme_name"]     = scheme_row["name"]     if scheme_row else d["scheme_id"]
                 d["scheme_deadline"] = scheme_row["deadline"] if scheme_row else None
                 d["scheme_url"]      = scheme_row["source_url"] if scheme_row else "#"
@@ -97,21 +85,21 @@ def load_drafts(status_filter: str = None) -> list[dict]:
                 d["issuing_body"]    = scheme_row["issuing_body"] if scheme_row else ""
 
                 # Attach match result (most recent)
-                mr_row = conn.execute(
+                mr_row = db.fetchone(
                     """SELECT match_status, match_score, reasoning FROM match_result
                        WHERE profile_id=? AND scheme_id=?
                        ORDER BY evaluated_at DESC LIMIT 1""",
                     (d["profile_id"], d["scheme_id"])
-                ).fetchone()
+                )
                 d["match_status"]    = mr_row["match_status"]  if mr_row else "unknown"
                 d["match_score"]     = mr_row["match_score"]   if mr_row else 0
                 d["match_reasoning"] = mr_row["reasoning"]     if mr_row else ""
 
                 # Attach profile display name
-                pr_row = conn.execute(
+                pr_row = db.fetchone(
                     "SELECT display_name, language_preference, state, district FROM citizen_profile WHERE profile_id=?",
                     (d["profile_id"],)
-                ).fetchone()
+                )
                 d["profile_name"] = pr_row["display_name"]       if pr_row else d["profile_id"]
                 d["lang_pref"]    = pr_row["language_preference"] if pr_row else "en"
                 d["citizen_location"] = f"{pr_row['district'] or ''}, {pr_row['state'] or ''}".strip(", ") if pr_row else ""
@@ -130,14 +118,14 @@ def load_all_match_results() -> list[dict]:
     """Load all MatchResults from DB along with scheme and profile details."""
     results = []
     try:
-        with _conn() as conn:
-            rows = conn.execute(
+        with get_db() as db:
+            rows = db.fetchall(
                 """SELECT m.*, s.name as scheme_name, s.category, p.display_name as profile_name
                    FROM match_result m
                    LEFT JOIN scheme s ON m.scheme_id = s.scheme_id
                    LEFT JOIN citizen_profile p ON m.profile_id = p.profile_id
                    ORDER BY m.match_score DESC, m.evaluated_at DESC"""
-            ).fetchall()
+            )
             for r in rows:
                 d = dict(r)
                 if isinstance(d.get("missing_info"), str):
@@ -155,8 +143,8 @@ def load_all_schemes() -> list[dict]:
     """Load scheme metadata for forms and dropdowns."""
     schemes = []
     try:
-        with _conn() as conn:
-            rows = conn.execute("SELECT scheme_id, name, category, issuing_body, deadline FROM scheme ORDER BY name ASC").fetchall()
+        with get_db() as db:
+            rows = db.fetchall("SELECT scheme_id, name, category, issuing_body, deadline FROM scheme ORDER BY name ASC")
             schemes = [dict(r) for r in rows]
     except Exception as exc:
         log.error("Error loading schemes: %s", exc)
@@ -328,8 +316,8 @@ def reject(draft_id: str):
 @app.route("/edit/<draft_id>", methods=["GET", "POST"])
 def edit(draft_id: str):
     try:
-        with _conn() as conn:
-            row = conn.execute("SELECT * FROM application_draft WHERE draft_id=?", (draft_id,)).fetchone()
+        with get_db() as db:
+            row = db.fetchone("SELECT * FROM application_draft WHERE draft_id=?", (draft_id,))
         if not row:
             return redirect(url_for("index", error=f"Draft {draft_id} not found."))
         d = _parse_json_col(dict(row), ["filled_fields", "unresolved_fields"])

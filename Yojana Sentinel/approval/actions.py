@@ -30,6 +30,8 @@ from typing import Optional
 from approval.approval_log import log_action
 from drafting.field_mapper import recompute_after_edit
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT    = Path(__file__).resolve().parent.parent
@@ -44,20 +46,13 @@ class ApprovalError(Exception):
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
-def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(str(DB_PATH))
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
-
-
 def _get_draft(draft_id: str) -> dict:
     """Fetch a draft by ID; raise ApprovalError if not found."""
     try:
-        with _conn() as conn:
-            row = conn.execute(
+        with get_db() as db:
+            row = db.fetchone(
                 "SELECT * FROM application_draft WHERE draft_id=?", (draft_id,)
-            ).fetchone()
+            )
     except Exception as exc:
         raise ApprovalError(f"Database error fetching draft {draft_id}: {exc}") from exc
 
@@ -80,8 +75,8 @@ def _update_draft(draft_id: str, updates: dict) -> None:
         return
     set_clause = ", ".join(f"{col}=?" for col in updates)
     values     = list(updates.values()) + [draft_id]
-    with _conn() as conn:
-        conn.execute(
+    with get_db() as db:
+        db.execute(
             f"UPDATE application_draft SET {set_clause} WHERE draft_id=?",
             values,
         )
@@ -90,8 +85,8 @@ def _update_draft(draft_id: str, updates: dict) -> None:
 def _get_scheme(scheme_id: str) -> dict:
     """Load scheme from DB for recompute_after_edit calls."""
     try:
-        with _conn() as conn:
-            row = conn.execute("SELECT * FROM scheme WHERE scheme_id=?", (scheme_id,)).fetchone()
+        with get_db() as db:
+            row = db.fetchone("SELECT * FROM scheme WHERE scheme_id=?", (scheme_id,))
         if row:
             d = dict(row)
             for f in ("application_fields", "eligibility_rules", "required_documents"):

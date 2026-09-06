@@ -48,6 +48,9 @@ RESULTS_JSON  = ROOT / "data" / "match_results.json"
 SCOPE_PATH    = ROOT / "config" / "scope.json"
 
 
+from db.database import get_db
+
+
 # ── Loaders ───────────────────────────────────────────────────────────────────
 
 def load_scope() -> dict:
@@ -56,12 +59,9 @@ def load_scope() -> dict:
 
 
 def load_from_db() -> tuple[list[dict], list[dict]]:
-    """Load schemes and profiles from SQLite. Returns (schemes, profiles)."""
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row
-
-    def _parse_json_fields(row: sqlite3.Row, json_fields: list[str]) -> dict:
-        d = dict(row)
+    """Load schemes and profiles from Database. Returns (schemes, profiles)."""
+    def _parse_json_fields(d: dict, json_fields: list[str]) -> dict:
+        d = dict(d)
         for field in json_fields:
             if field in d and isinstance(d[field], str):
                 try:
@@ -75,17 +75,17 @@ def load_from_db() -> tuple[list[dict], list[dict]]:
     ]
     profile_json_fields = ["documents_available"]
 
-    schemes_raw = conn.execute("SELECT * FROM scheme").fetchall()
-    schemes = [_parse_json_fields(r, scheme_json_fields) for r in schemes_raw]
+    with get_db() as db:
+        schemes_raw = db.fetchall("SELECT * FROM scheme")
+        schemes = [_parse_json_fields(r, scheme_json_fields) for r in schemes_raw]
 
-    profiles_raw = conn.execute("SELECT * FROM citizen_profile").fetchall()
-    profiles = [_parse_json_fields(r, profile_json_fields) for r in profiles_raw]
+        profiles_raw = db.fetchall("SELECT * FROM citizen_profile")
+        profiles = [_parse_json_fields(r, profile_json_fields) for r in profiles_raw]
 
     # Normalize owns_land: 0/1 → False/True
     for p in profiles:
         p["owns_land"] = bool(p.get("owns_land", 0))
 
-    conn.close()
     log.info("Loaded %d schemes, %d profiles from DB.", len(schemes), len(profiles))
     return schemes, profiles
 
@@ -102,15 +102,21 @@ def load_from_json() -> tuple[list[dict], list[dict]]:
 
 # ── DB upsert ─────────────────────────────────────────────────────────────────
 
-def upsert_result(conn: sqlite3.Connection, result: dict) -> None:
-    """Upsert a single MatchResult into the DB."""
+def upsert_result(db, result: dict) -> None:
+    """Upsert a single MatchResult into the DB (ANSI/PostgreSQL compliant)."""
     sql = """
-        INSERT OR REPLACE INTO match_result (
+        INSERT INTO match_result (
             profile_id, scheme_id, match_score, match_status,
             missing_info, reasoning, evaluated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (profile_id, scheme_id) DO UPDATE SET
+            match_score = EXCLUDED.match_score,
+            match_status = EXCLUDED.match_status,
+            missing_info = EXCLUDED.missing_info,
+            reasoning = EXCLUDED.reasoning,
+            evaluated_at = EXCLUDED.evaluated_at
     """
-    conn.execute(sql, (
+    db.execute(sql, (
         result["profile_id"],
         result["scheme_id"],
         result["match_score"],
@@ -133,10 +139,10 @@ def run(use_llm: bool = True, json_only: bool = False) -> list[dict]:
 
     # Load data
     try:
-        if not json_only and DB_PATH.exists():
+        if not json_only:
             schemes, profiles = load_from_db()
         else:
-            log.info("DB not found or json-only mode. Loading from seed JSON.")
+            log.info("json-only mode. Loading from seed JSON.")
             schemes, profiles = load_from_json()
     except Exception as exc:
         log.warning("DB load failed (%s). Falling back to seed JSON.", exc)
@@ -152,10 +158,9 @@ def run(use_llm: bool = True, json_only: bool = False) -> list[dict]:
     all_results: list[dict] = []
 
     # Open DB connection (if needed)
-    conn: sqlite3.Connection | None = None
-    if not json_only and DB_PATH.exists():
-        conn = sqlite3.connect(str(DB_PATH))
-        conn.execute("PRAGMA foreign_keys=ON")
+    db = get_db() if not json_only else None
+    if db:
+        db.connect()
 
     try:
         for profile in profiles:
@@ -169,15 +174,15 @@ def run(use_llm: bool = True, json_only: bool = False) -> list[dict]:
                 result = match(profile, scheme, run_llm=use_llm)
                 all_results.append(result)
 
-                if conn is not None:
-                    upsert_result(conn, result)
+                if db is not None:
+                    upsert_result(db, result)
 
-        if conn is not None:
-            conn.commit()
+        if db is not None:
+            db.commit()
 
     finally:
-        if conn is not None:
-            conn.close()
+        if db is not None:
+            db.close()
 
     # Write JSON output (always — useful for demo/dashboards)
     RESULTS_JSON.parent.mkdir(parents=True, exist_ok=True)

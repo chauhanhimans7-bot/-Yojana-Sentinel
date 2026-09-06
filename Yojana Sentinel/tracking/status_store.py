@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT    = Path(__file__).resolve().parent.parent
@@ -56,17 +58,10 @@ VALID_TRANSITIONS: dict[str, set[str]] = {
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
-def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(str(DB_PATH))
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
-    return c
-
-
 def _get_draft(draft_id: str) -> dict:
     try:
-        with _conn() as conn:
-            row = conn.execute("SELECT * FROM application_draft WHERE draft_id=?", (draft_id,)).fetchone()
+        with get_db() as db:
+            row = db.fetchone("SELECT * FROM application_draft WHERE draft_id=?", (draft_id,))
     except Exception as exc:
         raise StatusTrackingError(f"Database error fetching draft {draft_id}: {exc}") from exc
 
@@ -120,8 +115,8 @@ def update_status(draft_id: str, new_status: str, note: str = "") -> dict:
             f"Allowed next states from '{current_status}': {sorted(allowed) or 'None (terminal state)'}"
         )
 
-    with _conn() as conn:
-        conn.execute(
+    with get_db() as db:
+        db.execute(
             "UPDATE application_draft SET status=? WHERE draft_id=?",
             (new_status, draft_id),
         )
