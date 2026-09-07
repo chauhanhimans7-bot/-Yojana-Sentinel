@@ -44,6 +44,7 @@ app = Flask(
     __name__,
     template_folder=str(ROOT / "templates"),
     static_folder=str(ROOT / "static"),
+    static_url_path="/static",
 )
 app.secret_key = "yojana-sentinel-dev-key"
 
