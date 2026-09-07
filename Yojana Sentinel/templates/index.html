@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Yojana Sentinel — Pending Approvals{% endblock %}
+
+{% block page_title %}Pending Approvals{% endblock %}
+{% block page_subtitle %}Human sign-off required · AI has prepared the following application drafts for your review{% endblock %}
+
+{% block header_actions %}
+<div class="flex-center gap-8" style="font-size:0.78rem;color:var(--text-muted);">
+  <span class="pulse-dot cyan" style="flex-shrink:0;"></span>
+  Human-in-the-Loop Protocol Active
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats Row -->
+<div class="stats-grid mb-32">
+  <div class="stat-card stat-amber" style="animation-delay:0.05s;">
+    <span class="stat-icon">📥</span>
+    <div class="stat-value" data-target="{{ drafts | length }}">{{ drafts | length }}</div>
+    <div class="stat-label">Awaiting Review</div>
+  </div>
+  <div class="stat-card stat-red" style="animation-delay:0.10s;">
+    <span class="stat-icon">🚨</span>
+    <div class="stat-value" data-target="{{ drafts | selectattr('is_stale') | list | length }}">{{ drafts | selectattr('is_stale') | list | length }}</div>
+    <div class="stat-label">Stale Drafts</div>
+  </div>
+  <div class="stat-card stat-cyan" style="animation-delay:0.15s;">
+    <span class="stat-icon">⚠️</span>
+    <div class="stat-value" data-target="{{ drafts | selectattr('unresolved_fields') | list | length }}">{{ drafts | selectattr('unresolved_fields') | list | length }}</div>
+    <div class="stat-label">With Missing Info</div>
+  </div>
+  <div class="stat-card stat-emerald" style="animation-delay:0.20s;">
+    <span class="stat-icon">✅</span>
+    <div class="stat-value" data-target="{{ drafts | rejectattr('is_stale') | list | length }}">{{ drafts | rejectattr('is_stale') | list | length }}</div>
+    <div class="stat-label">Ready to Review</div>
+  </div>
+</div>
+
+<!-- Draft Cards -->
+{% if not drafts %}
+<div class="empty-state">
+  <span class="empty-state-icon">🎉</span>
+  <h2 class="empty-state-title">All Clear — No Pending Drafts</h2>
+  <p class="empty-state-desc">No applications are waiting for human sign-off right now. The system will automatically generate new drafts when monitoring events detect eligible citizens.</p>
+  <a href="{{ url_for('events_view') }}" class="btn btn-trigger">⚡ Inject Demo Event</a>
+</div>
+{% else %}
+
+<div class="card-list">
+{% for d in drafts %}
+
+{# Determine match banner class #}
+{% set match_cls = {'strong_match':'badge-strong','partial_match':'badge-partial','needs_review':'badge-review','not_eligible':'badge-no'} %}
+{% set match_label = {'strong_match':'✅ Strong Match','partial_match':'⚠️ Partial Match','needs_review':'🔍 Needs Review','not_eligible':'❌ Not Eligible'} %}
+{% set cat_cls = {'education':'badge-edu','agriculture':'badge-agr','health':'badge-hlth'} %}
+{% set score_cls = {'strong_match':'strong','partial_match':'partial','needs_review':'review','not_eligible':'no'} %}
+
+{# Score ring circumference offset: 220 - (score/100)*220 #}
+{% set ring_offset = (220 - (d.match_score / 100) * 220) | int %}
+
+<div class="draft-card {% if d.is_stale %}stale-card{% endif %}" style="animation-delay:{{ loop.index0 * 0.08 }}s;">
+  <!-- Card Head -->
+  <div class="draft-card-head">
+    <div>
+      <div class="draft-card-title">{{ d.scheme_name }}</div>
+      <div class="draft-card-scheme-meta">
+        Issuing Body: {{ d.issuing_body or '—' }} &nbsp;·&nbsp;
+        {{ d.scheme_deadline or 'Rolling submission (no fixed deadline)' }}
+      </div>
+    </div>
+    <div class="flex-center gap-8">
+      <span class="badge {{ cat_cls.get(d.scheme_category,'badge-other') }}">{{ d.scheme_category | title }}</span>
+      {% if d.is_stale %}<span class="badge badge-stale">🚨 STALE</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- Card Body: split layout -->
+  <div class="draft-card-body">
+
+    <!-- Left: Draft content -->
+    <div class="draft-main">
+      <!-- Beneficiary meta -->
+      <div class="draft-meta-row">
+        <div class="draft-meta-item">
+          👤 Beneficiary: <strong>{{ d.profile_name }}</strong>
+        </div>
+        {% if d.citizen_location %}
+        <div class="draft-meta-item">
+          📍 {{ d.citizen_location }}
+        </div>
+        {% endif %}
+        <div class="draft-meta-item">
+          🔗 <a href="{{ d.scheme_url }}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;">Official Guidelines ↗</a>
+        </div>
+      </div>
+
+      <!-- Stale Alert -->
+      {% if d.is_stale %}
+      <div class="alert-box alert-stale mb-16">
+        🚨 <strong>Stale Draft Warning:</strong> {{ d.staleness_reason }}
+        <br><small style="opacity:0.8;">A scheme update was detected after this draft was created. Resolve before approving.</small>
+      </div>
+      {% endif %}
+
+      <!-- Missing field warning -->
+      {% if d.unresolved_fields %}
+      <div class="alert-box alert-warn mb-16">
+        ⚠️ <strong>{{ d.unresolved_fields | length }} required field(s) still missing:</strong>
+        <ul style="margin-top:6px;padding-left:18px;">
+          {% for fid in d.unresolved_fields %}
+          <li>{{ fid.replace('_', ' ').title() }}</li>
+          {% endfor %}
+        </ul>
+        <div style="margin-top:6px;font-size:0.8rem;opacity:0.8;">You may approve with acknowledgement — missing info must be provided at manual submission time.</div>
+      </div>
+      {% endif %}
+
+      <!-- Draft Text Preview -->
+      <details {% if loop.index == 1 %}open{% endif %}>
+        <summary>
+          📝 AI-Generated Application Cover Letter
+          <span style="margin-left:auto;" class="flex-center gap-8">
+            <button class="copy-draft-btn btn btn-ghost btn-sm" data-target="#draft-text-{{ d.draft_id }}"
+                    data-no-transition type="button" onclick="event.stopPropagation()">📋 Copy</button>
+          </span>
+        </summary>
+        <div class="draft-text-preview" id="draft-text-{{ d.draft_id }}" style="margin-top:12px;">{{ d.draft_text or '(No draft text available)' }}</div>
+      </details>
+
+      <!-- Fields table -->
+      <details>
+        <summary>
+          View pre-filled parameters
+          <span class="badge badge-drafted" style="margin-left:8px;">{{ d.filled_fields | length }} fields</span>
+        </summary>
+        <table class="field-table" style="margin-top:10px;">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in (d.filled_fields or [])[:14] %}
+            {% set src_cls = {'profile':'src-profile','inferred':'src-inferred','needs_input':'src-input'} %}
+            {% set src_lbl = {'profile':'✓ from profile','inferred':'~ inferred','needs_input':'✗ missing'} %}
+            <tr>
+              <td>{{ f.field_id.replace('_', ' ').title() }}</td>
+              <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ (f.value or '—')[:80] }}</td>
+              <td class="{{ src_cls.get(f.source,'') }}">{{ src_lbl.get(f.source, f.source) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </div><!-- /.draft-main -->
+
+    <!-- Right: Match score sidebar -->
+    <div class="draft-sidebar">
+      <!-- Score ring -->
+      <div class="score-ring-wrap">
+        <div class="score-ring" data-score="{{ d.match_score }}">
+          <svg viewBox="0 0 80 80" width="80" height="80">
+            <circle class="track" cx="40" cy="40" r="35"/>
+            <circle class="fill {{ score_cls.get(d.match_status, 'review') }}" cx="40" cy="40" r="35"
+                    style="stroke-dashoffset: {{ 220 - (d.match_score / 100 * 220) | int }};"/>
+          </svg>
+          <div class="score-ring-val">{{ d.match_score | int }}</div>
+        </div>
+        <div class="score-ring-label">Match Score</div>
+        <span class="badge {{ match_cls.get(d.match_status, 'badge-review') }}">{{ match_label.get(d.match_status, d.match_status) }}</span>
+      </div>
+
+      <!-- Reasoning -->
+      {% if d.match_reasoning %}
+      <details style="width:100%;">
+        <summary style="font-size:0.75rem;justify-content:center;">AI Reasoning</summary>
+        <div class="reasoning-box" style="margin-top:8px;font-size:0.7rem;max-height:140px;">{{ d.match_reasoning[:400] }}</div>
+      </details>
+      {% endif %}
+    </div><!-- /.draft-sidebar -->
+  </div><!-- /.draft-card-body -->
+
+  <!-- Action Bar -->
+  <div class="action-bar">
+    {% if not d.is_stale %}
+    <form method="POST" action="{{ url_for('approve', draft_id=d.draft_id) }}" data-once>
+      <input type="hidden" name="approver_name" value="Family Representative">
+      {% if d.unresolved_fields %}<input type="hidden" name="confirm_anyway" value="1">{% endif %}
+      <button class="btn btn-approve approve-trigger btn-glow" type="button">
+        ✅ Mark Ready to Submit
+      </button>
+    </form>
+    {% else %}
+    <button class="btn btn-approve" disabled title="Resolve staleness before approving">✅ Mark Ready to Submit</button>
+    {% endif %}
+
+    <a class="btn btn-edit" href="{{ url_for('edit', draft_id=d.draft_id) }}">✏️ Edit Fields</a>
+    <a class="btn btn-reject" href="{{ url_for('reject', draft_id=d.draft_id) }}">❌ Reject Draft</a>
+
+    <div style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">
+      Draft ID: <span class="font-mono">{{ d.draft_id }}</span>
+    </div>
+  </div>
+</div><!-- /.draft-card -->
+
+{% endfor %}
+</div><!-- /.card-list -->
+{% endif %}
+
+<!-- Approval Confirmation Modal -->
+<div class="modal-overlay" id="approve-modal" role="dialog" aria-modal="true" aria-labelledby="approve-modal-title">
+  <div class="modal-box">
+    <div class="modal-title" id="approve-modal-title">✅ Confirm Human Sign-Off</div>
+    <div class="modal-body">
+      You are marking this application draft as <strong>Ready to Submit</strong>.<br><br>
+      This means you, as the human representative, have reviewed all the AI-generated content and approve it for manual submission to the government portal.<br><br>
+      <strong>Yojana Sentinel will NOT auto-submit anything.</strong> You must complete the actual portal submission yourself.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="approve-cancel" type="button">← Cancel Review</button>
+      <button class="btn btn-approve" id="approve-confirm" type="button">✅ Confirm Sign-Off</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Yojana Sentinel — Monitoring & Event Feed{% endblock %}
+{% block page_title %}Monitoring & Demo{% endblock %}
+{% block page_subtitle %}Live portal differential engine · Inject events to trigger the AI matching pipeline{% endblock %}
+
+{% block content %}
+
+<!-- Live Monitor Hero -->
+<div class="monitor-hero">
+  <div class="monitor-hero-icon">📡</div>
+  <div style="flex:1;">
+    <div class="monitoring-live">
+      <span class="pulse-dot cyan"></span>
+      Portal Differential Engine Active
+    </div>
+    <div style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-top:6px;">
+      Yojana Sentinel continuously monitors government scheme portals for changes
+    </div>
+    <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px;">
+      New scheme, deadline alerts, eligibility updates, and scheme closures are auto-detected and routed to the matching engine.
+    </div>
+  </div>
+  <div style="text-align:right;flex-shrink:0;">
+    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Target Region</div>
+    <div style="font-size:1rem;font-weight:700;color:var(--cyan);">Uttar Pradesh</div>
+    <div style="font-size:0.75rem;color:var(--text-muted);">Education · Agriculture · Health</div>
+  </div>
+</div>
+
+<!-- Interactive Event Injector -->
+<div class="injector-card">
+  <div class="injector-title">
+    <span class="pulse-dot amber" style="width:9px;height:9px;"></span>
+    Interactive Portal Event Injector
+  </div>
+  <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;">
+    Simulate a live government portal change — deadline alert, new scheme, eligibility update, or scheme closure.
+    Injecting an event automatically routes it through the real matching pipeline and generates updated application drafts.
+  </p>
+
+  <form class="injector-form" method="POST" action="{{ url_for('trigger_event') }}" data-once>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">Target Scheme</label>
+      <select name="scheme_id" class="form-select" required>
+        {% for s in schemes %}
+        <option value="{{ s.scheme_id }}">{{ s.name }} ({{ s.scheme_id }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">Event Type</label>
+      <select name="event_type" class="form-select" required>
+        <option value="deadline_approaching">🚨 Deadline Approaching</option>
+        <option value="new_scheme">✨ New Scheme Announced</option>
+        <option value="scheme_updated">🔄 Eligibility Updated</option>
+        <option value="scheme_closed">🔒 Scheme Closed</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:flex-end;">
+      <button class="btn btn-trigger" type="submit">⚡ Inject &amp; Run Pipeline</button>
+    </div>
+  </form>
+</div>
+
+<!-- Event Feed -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">⚡ Monitoring Event Log</div>
+      <div class="card-subtitle">{{ events_list | length }} event(s) recorded · Latest first</div>
+    </div>
+    <div class="monitoring-live">
+      <span class="pulse-dot cyan" style="width:7px;height:7px;"></span>
+      Live Feed
+    </div>
+  </div>
+
+  {% if not events_list %}
+  <div class="empty-state" style="border:none;border-radius:0;">
+    <span class="empty-state-icon">📡</span>
+    <h2 class="empty-state-title">No Events Recorded Yet</h2>
+    <p class="empty-state-desc">Use the event injector above to simulate a portal change and trigger the monitoring pipeline.</p>
+  </div>
+  {% else %}
+
+  {% set event_colors = {
+    'deadline_approaching': '#f59e0b',
+    'new_scheme': '#10b981',
+    'scheme_updated': '#3b82f6',
+    'scheme_closed': '#ef4444'
+  } %}
+  {% set event_icons = {
+    'deadline_approaching': '🚨',
+    'new_scheme': '✨',
+    'scheme_updated': '🔄',
+    'scheme_closed': '🔒'
+  } %}
+
+  {% for ev in events_list %}
+  <div class="event-item" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+    <div style="display:flex;gap:14px;align-items:flex-start;flex:1;">
+      <div class="event-type-dot" style="background:{{ event_colors.get(ev.event_type, '#64748b') }};margin-top:8px;flex-shrink:0;box-shadow:0 0 8px {{ event_colors.get(ev.event_type, '#64748b') }}60;"></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span class="badge {% if ev.event_type == 'deadline_approaching' %}badge-stale{% elif ev.event_type == 'new_scheme' %}badge-approved{% elif ev.event_type == 'scheme_updated' %}badge-pending{% else %}badge-rejected{% endif %}">
+            {{ event_icons.get(ev.event_type, '📋') }} {{ ev.event_type.replace('_', ' ').title() }}
+          </span>
+        </div>
+        <div style="font-weight:600;color:var(--text-primary);font-size:0.875rem;line-height:1.4;">{{ ev.detail }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+          Scheme ID: <span class="font-mono">{{ ev.scheme_id }}</span> &nbsp;·&nbsp; Event ID: <span class="font-mono">{{ ev.event_id }}</span>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;padding-left:16px;">
+      <div style="font-size:0.82rem;color:var(--text-secondary);font-weight:600;">
+        {{ ev.detected_at[:10] if ev.detected_at else '' }}
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-muted);">
+        {{ ev.detected_at[11:19] if ev.detected_at and ev.detected_at | length > 11 else '' }} UTC
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+
+{% endblock %}

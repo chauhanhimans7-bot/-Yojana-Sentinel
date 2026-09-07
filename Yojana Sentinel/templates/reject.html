@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Reject Draft — Yojana Sentinel{% endblock %}
+{% block page_title %}Reject Application Draft{% endblock %}
+{% block page_subtitle %}This action will be permanently logged to the audit trail{% endblock %}
+
+{% block content %}
+
+<div style="max-width:600px;">
+  <div class="alert-box alert-warn mb-24" style="font-size:0.875rem;">
+    ⚠️ <strong>Rejection is permanent.</strong> The draft will be discarded and your name and reason will be recorded in the audit log. This cannot be undone.
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">❌ Confirm Draft Rejection</div>
+    </div>
+
+    <form method="POST" data-once>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Your Name (for audit record)</label>
+          <input type="text" name="approver_name" class="form-input" value="Family Representative" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason for Rejection</label>
+          <textarea name="reason" class="form-textarea" rows="5" required data-maxlength="500"
+                    placeholder="Explain why this application draft is being rejected. This reason will be permanently recorded..."></textarea>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-reject" type="submit">❌ Confirm Rejection</button>
+        <a class="btn btn-secondary" href="{{ url_for('index') }}" data-no-transition>← Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
