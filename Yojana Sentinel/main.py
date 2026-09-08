@@ -29,6 +29,7 @@ log = logging.getLogger("yojana_sentinel")
 ROOT = Path(__file__).resolve().parent
 
 # Imports from Yojana Sentinel modules
+from db.database import get_db
 from db.seed import run as seed_all
 from matching.run_matching import run as run_matching_pipeline
 from drafting.create_draft import create_draft, DraftCreationError
@@ -38,22 +39,54 @@ from approval.app import app
 
 def batch_create_drafts(use_llm: bool = True) -> int:
     """Generate ApplicationDraft records for all strong and partial matches."""
-    match_file = ROOT / "data" / "match_results.json"
     schemes_file = ROOT / "data" / "schemes_seed.json"
     profiles_file = ROOT / "data" / "profiles_seed.json"
 
-    if not match_file.exists():
-        log.error("match_results.json not found. Run matching first.")
+    schemes = {}
+    profiles = {}
+    if schemes_file.exists():
+        with open(schemes_file, "r", encoding="utf-8") as f:
+            schemes = {s["scheme_id"]: s for s in json.load(f)}
+    if profiles_file.exists():
+        with open(profiles_file, "r", encoding="utf-8") as f:
+            profiles = {p["profile_id"]: p for p in json.load(f)}
+
+    # Attempt to load match results from Database first (primary source of truth)
+    results = []
+    try:
+        with get_db() as db:
+            rows = db.fetchall(
+                "SELECT * FROM match_result WHERE match_status IN ('strong_match', 'partial_match')"
+            )
+            for r in rows:
+                d = dict(r)
+                if isinstance(d.get("missing_info"), str):
+                    try:
+                        d["missing_info"] = json.loads(d["missing_info"])
+                    except Exception:
+                        d["missing_info"] = []
+                results.append(d)
+        log.info("Loaded %d actionable match result(s) from Database.", len(results))
+    except Exception as exc:
+        log.warning("Could not read match results from DB (%s). Checking JSON fallback.", exc)
+
+    # Fallback to data/match_results.json if DB has no results
+    if not results:
+        match_file = ROOT / "data" / "match_results.json"
+        if match_file.exists():
+            try:
+                with open(match_file, "r", encoding="utf-8") as f:
+                    all_json = json.load(f)
+                results = [r for r in all_json if r.get("match_status") in ("strong_match", "partial_match")]
+                log.info("Loaded %d actionable match result(s) from match_results.json fallback.", len(results))
+            except Exception as exc:
+                log.error("Could not read match_results.json fallback: %s", exc)
+
+    if not results:
+        log.warning("No actionable match results found in DB or match_results.json.")
         return 0
 
-    with open(match_file, "r", encoding="utf-8") as f:
-        results = json.load(f)
-    with open(schemes_file, "r", encoding="utf-8") as f:
-        schemes = {s["scheme_id"]: s for s in json.load(f)}
-    with open(profiles_file, "r", encoding="utf-8") as f:
-        profiles = {p["profile_id"]: p for p in json.load(f)}
-
-    actionable = [r for r in results if r.get("match_status") in ("strong_match", "partial_match")]
+    actionable = results
     log.info("Found %d actionable match result(s) to draft.", len(actionable))
 
     created = 0

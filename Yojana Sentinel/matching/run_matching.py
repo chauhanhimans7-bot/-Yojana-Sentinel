@@ -184,12 +184,15 @@ def run(use_llm: bool = True, json_only: bool = False) -> list[dict]:
         if db is not None:
             db.close()
 
-    # Write JSON output (always — useful for demo/dashboards)
-    RESULTS_JSON.parent.mkdir(parents=True, exist_ok=True)
-    with open(RESULTS_JSON, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, ensure_ascii=False, indent=2)
+    # Write JSON output (if file system is writable — fallback for local dev/demos)
+    try:
+        RESULTS_JSON.parent.mkdir(parents=True, exist_ok=True)
+        with open(RESULTS_JSON, "w", encoding="utf-8") as f:
+            json.dump(all_results, f, ensure_ascii=False, indent=2)
+        log.info("Matching complete. %d results written to %s.", len(all_results), RESULTS_JSON)
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write match_results.json (%s). Results are saved in DB.", exc)
 
-    log.info("Matching complete. %d results written.", len(all_results))
     return all_results
 
 
