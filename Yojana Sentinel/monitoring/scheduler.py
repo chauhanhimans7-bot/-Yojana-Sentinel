@@ -138,10 +138,13 @@ def _load_previous_snapshot() -> list[dict]:
 
 def _save_snapshot(schemes: list[dict]) -> None:
     """Persist current scheme list as snapshot for next tick's diff."""
-    SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(SNAPSHOT_PATH, "w", encoding="utf-8") as f:
-        json.dump(schemes, f, ensure_ascii=False, indent=2)
-    log.debug("Snapshot saved: %d schemes.", len(schemes))
+    try:
+        SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(SNAPSHOT_PATH, "w", encoding="utf-8") as f:
+            json.dump(schemes, f, ensure_ascii=False, indent=2)
+        log.debug("Snapshot saved: %d schemes.", len(schemes))
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write portal_snapshot.json (%s).", exc)
 
 
 # ── Profile loading ────────────────────────────────────────────────────────────

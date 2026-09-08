@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from db.database import get_db
+
 log = logging.getLogger(__name__)
 
 ROOT         = Path(__file__).resolve().parent.parent
@@ -31,6 +33,25 @@ def _now_utc() -> str:
 
 
 def _load_log() -> list[dict]:
+    # ── Try DB first ──────────────────────────────────────────────────────────
+    try:
+        with get_db() as db:
+            rows = db.fetchall("SELECT * FROM approval_log ORDER BY timestamp DESC LIMIT 200")
+            if rows:
+                results = []
+                for r in rows:
+                    d = dict(r)
+                    if isinstance(d.get("extra"), str):
+                        try:
+                            d["extra"] = json.loads(d["extra"])
+                        except Exception:
+                            d["extra"] = {}
+                    results.append(d)
+                return results
+    except Exception as exc:
+        log.warning("Could not read approval_log from DB: %s — checking JSON log.", exc)
+
+    # ── Fallback to JSON log ──────────────────────────────────────────────────
     if not LOG_PATH.exists():
         return []
     try:
@@ -41,9 +62,13 @@ def _load_log() -> list[dict]:
 
 
 def _save_log(entries: list[dict]) -> None:
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_PATH, "w", encoding="utf-8") as f:
-        json.dump(entries, f, ensure_ascii=False, indent=2)
+    """Persist log to JSON (local fallback — safely caught if file system is read-only)."""
+    try:
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG_PATH, "w", encoding="utf-8") as f:
+            json.dump(entries, f, ensure_ascii=False, indent=2)
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write approval_log.json (%s). Log saved in DB.", exc)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -56,7 +81,7 @@ def log_action(
     extra: Optional[dict] = None,
 ) -> dict:
     """
-    Append a human action to the approval log.
+    Append a human action to the approval log (DB + JSON fallback).
     Returns the log entry dict.
     """
     entry = {
@@ -68,10 +93,34 @@ def log_action(
         "note":       note or "",
         "extra":      extra or {},
     }
-    entries = _load_log()
-    # Latest first
-    entries.insert(0, entry)
-    _save_log(entries)
+
+    # ── DB insert ─────────────────────────────────────────────────────────────
+    try:
+        with get_db() as db:
+            db.execute(
+                """INSERT INTO approval_log
+                   (log_id, draft_id, action, actor_name, timestamp, note, extra)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    entry["log_id"],
+                    entry["draft_id"],
+                    entry["action"],
+                    entry["actor_name"],
+                    entry["timestamp"],
+                    entry["note"],
+                    json.dumps(entry["extra"], ensure_ascii=False),
+                ),
+            )
+    except Exception as exc:
+        log.error("Failed to write approval_log entry to DB: %s", exc)
+
+    # ── JSON fallback log ─────────────────────────────────────────────────────
+    try:
+        entries = _load_log()
+        entries.insert(0, entry)
+        _save_log(entries)
+    except Exception as exc:
+        log.warning("JSON approval log save skipped: %s", exc)
 
     log.info(
         "ApprovalLog | action=%-10s draft=%-20s actor=%s",

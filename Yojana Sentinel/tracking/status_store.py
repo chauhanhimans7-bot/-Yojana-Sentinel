@@ -79,17 +79,20 @@ def _log_transition(draft_id: str, old_status: str, new_status: str, note: str =
         "timestamp":  datetime.now(timezone.utc).isoformat(),
         "note":       note,
     }
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    logs = []
-    if LOG_PATH.exists():
-        try:
-            with open(LOG_PATH, "r", encoding="utf-8") as f:
-                logs = json.load(f)
-        except Exception:
-            logs = []
-    logs.insert(0, entry)
-    with open(LOG_PATH, "w", encoding="utf-8") as f:
-        json.dump(logs, f, ensure_ascii=False, indent=2)
+    try:
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        logs = []
+        if LOG_PATH.exists():
+            try:
+                with open(LOG_PATH, "r", encoding="utf-8") as f:
+                    logs = json.load(f)
+            except Exception:
+                logs = []
+        logs.insert(0, entry)
+        with open(LOG_PATH, "w", encoding="utf-8") as f:
+            json.dump(logs, f, ensure_ascii=False, indent=2)
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write status_transition_log.json (%s). Status update saved in DB.", exc)
 
     log.info("StatusTransition | draft=%s | %s ──→ %s | note: %s", draft_id, old_status, new_status, note)
 

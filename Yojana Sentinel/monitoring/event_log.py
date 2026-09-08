@@ -43,10 +43,13 @@ def _now_utc() -> str:
 
 
 def _write_json_log(events: list[dict]) -> None:
-    """Persist full event list to JSON for demo dashboard consumption."""
-    LOG_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_JSON_PATH, "w", encoding="utf-8") as f:
-        json.dump(events, f, ensure_ascii=False, indent=2)
+    """Persist full event list to JSON for demo dashboard consumption (local fallback)."""
+    try:
+        LOG_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG_JSON_PATH, "w", encoding="utf-8") as f:
+            json.dump(events, f, ensure_ascii=False, indent=2)
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write event_log.json (%s). Event is saved in DB.", exc)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -87,10 +90,13 @@ def append(
     except Exception as exc:
         log.error("Failed to write event to DB: %s", exc)
 
-    # ── JSON log (always updated — even if DB fails) ──────────────────────────
-    existing = all_events(source="json")
-    existing.insert(0, event)
-    _write_json_log(existing)
+    # ── JSON log (local fallback — safely caught if file system is read-only) ──
+    try:
+        existing = all_events(source="json")
+        existing.insert(0, event)
+        _write_json_log(existing)
+    except Exception as exc:
+        log.warning("JSON log update skipped: %s", exc)
 
     return event
 

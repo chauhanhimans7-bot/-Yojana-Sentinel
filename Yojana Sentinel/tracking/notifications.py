@@ -34,9 +34,12 @@ def _load_notifications() -> list[dict]:
 
 
 def _save_notifications(items: list[dict]) -> None:
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_PATH, "w", encoding="utf-8") as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
+    try:
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG_PATH, "w", encoding="utf-8") as f:
+            json.dump(items, f, ensure_ascii=False, indent=2)
+    except (OSError, PermissionError) as exc:
+        log.warning("Could not write notifications_log.json (%s).", exc)
 
 
 def trigger_staleness_notifications(threshold_days: Optional[int] = None) -> list[dict]:
