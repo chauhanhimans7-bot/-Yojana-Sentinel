@@ -80,6 +80,18 @@ def _log_transition(draft_id: str, old_status: str, new_status: str, note: str =
         "note":       note,
     }
     try:
+        from approval.approval_log import log_action
+        log_action(
+            draft_id=draft_id,
+            action=f"status_change:{new_status}",
+            actor_name="Human Operator",
+            note=f"Transitioned from '{old_status}' to '{new_status}'. {note}".strip(),
+            extra={"old_status": old_status, "new_status": new_status},
+        )
+    except Exception as exc:
+        log.warning("Could not log status transition to DB: %s", exc)
+
+    try:
         LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
         logs = []
         if LOG_PATH.exists():
@@ -165,6 +177,23 @@ def unmark_submitted(draft_id: str, note: str = "Corrected erroneous submission 
 
 def get_transition_history(draft_id: str) -> list[dict]:
     """Return all status transition log entries for a given draft."""
+    try:
+        from approval.approval_log import get_log_for_draft
+        db_logs = get_log_for_draft(draft_id)
+        if db_logs:
+            return [
+                {
+                    "draft_id":   e["draft_id"],
+                    "old_status": e.get("extra", {}).get("old_status", "") if isinstance(e.get("extra"), dict) else "",
+                    "new_status": e.get("extra", {}).get("new_status", e["action"]) if isinstance(e.get("extra"), dict) else e["action"],
+                    "timestamp":  e["timestamp"],
+                    "note":       e.get("note", ""),
+                }
+                for e in db_logs
+            ]
+    except Exception as exc:
+        log.warning("Could not load transition history from DB: %s", exc)
+
     if not LOG_PATH.exists():
         return []
     try:

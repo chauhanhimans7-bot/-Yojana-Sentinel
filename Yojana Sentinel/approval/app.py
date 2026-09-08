@@ -270,10 +270,13 @@ def update_tracking_status(draft_id: str):
 @app.route("/history")
 def history_view():
     drafts = load_drafts()
+    from approval.approval_log import get_all_logs
+    audit_logs = get_all_logs()
     return render_template(
         "history.html",
         page="history",
         drafts=drafts,
+        audit_logs=audit_logs,
         pending_count=len([d for d in drafts if d.get("status") == "drafted"]),
     )
 

@@ -143,8 +143,15 @@ def inject_event(scheme_id: str, event_type: str) -> dict:
 
     detail  = _build_detail(event_type, scheme)
 
+    # ── Check deduplication for deadline alerts ────────────────────────────────
+    from monitoring.event_log import append as log_event, has_deadline_alert, get_events
+    if event_type == "deadline_approaching" and has_deadline_alert(scheme_id):
+        log.info("Deadline alert already active for scheme '%s'. Returning existing alert.", scheme_id)
+        existing = get_events(scheme_id=scheme_id, event_type="deadline_approaching", limit=1)
+        if existing:
+            return existing[0]
+
     # ── Persist via real event_log (same as scheduler) ─────────────────────────
-    from monitoring.event_log import append as log_event
     event = log_event(event_type, scheme_id, detail)
 
     log.info("=" * 60)

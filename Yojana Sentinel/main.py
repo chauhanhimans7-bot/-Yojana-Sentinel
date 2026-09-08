@@ -100,7 +100,7 @@ def batch_create_drafts(use_llm: bool = True) -> int:
                     match_result=r,
                     profile=profiles[pid],
                     scheme=schemes[sid],
-                    force_new=True,
+                    force_new=False,
                 )
                 created += 1
                 log.info("Created draft %s for profile=%s scheme=%s", draft["draft_id"], pid, sid)

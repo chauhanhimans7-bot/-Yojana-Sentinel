@@ -33,7 +33,7 @@
   </div>
   <div class="stat-card stat-emerald" style="animation-delay:0.20s;">
     <span class="stat-icon">✅</span>
-    <div class="stat-value" data-target="{{ drafts | rejectattr('is_stale') | list | length }}">{{ drafts | rejectattr('is_stale') | list | length }}</div>
+    <div class="stat-value" data-target="{{ drafts | rejectattr('is_stale') | rejectattr('unresolved_fields') | list | length }}">{{ drafts | rejectattr('is_stale') | rejectattr('unresolved_fields') | list | length }}</div>
     <div class="stat-label">Ready to Review</div>
   </div>
 </div>
@@ -110,7 +110,7 @@
         ⚠️ <strong>{{ d.unresolved_fields | length }} required field(s) still missing:</strong>
         <ul style="margin-top:6px;padding-left:18px;">
           {% for fid in d.unresolved_fields %}
-          <li>{{ fid.replace('_', ' ').title() }}</li>
+          <li>{{ fid.replace('_', ' ') | title | replace('Pmjay', 'PMJAY') | replace('Obc', 'OBC') | replace('Sc St', 'SC/ST') | replace('Id', 'ID') }}</li>
           {% endfor %}
         </ul>
         <div style="margin-top:6px;font-size:0.8rem;opacity:0.8;">You may approve with acknowledgement — missing info must be provided at manual submission time.</div>

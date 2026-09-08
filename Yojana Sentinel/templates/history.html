@@ -44,15 +44,52 @@
 
   <div class="card-body">
     {% set audit_drafts = drafts | selectattr('status','in',['approved','rejected','submitted','resolved']) | list %}
-    {% if not audit_drafts %}
+    {% if not audit_logs and not audit_drafts %}
     <div class="empty-state" style="border:none;background:none;padding:40px 20px;">
       <span class="empty-state-icon">📜</span>
       <h2 class="empty-state-title">No Audit Records Yet</h2>
-      <p class="empty-state-desc">Approved or rejected drafts will appear here as a permanent accountability trail.</p>
+      <p class="empty-state-desc">Approved, rejected, or edited drafts will appear here as a permanent accountability trail.</p>
     </div>
     {% else %}
 
     <div class="audit-timeline">
+      {% if audit_logs %}
+      {% for log in audit_logs %}
+      {% set is_approve = log.action == 'approve' %}
+      {% set is_reject = log.action == 'reject' %}
+      {% set dot_cls = 'approve' if is_approve else ('reject' if is_reject else 'review') %}
+      {% set dot_icon = '✅' if is_approve else ('❌' if is_reject else '✏️') %}
+      <div class="audit-item" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+        <div class="audit-dot {{ dot_cls }}">{{ dot_icon }}</div>
+        <div class="audit-card">
+          <div class="flex-between mb-8">
+            <div>
+              <div class="audit-action">Action: {{ log.action | upper }}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px;">
+                Draft ID: <span class="font-mono">{{ log.draft_id }}</span>
+              </div>
+            </div>
+            <span class="badge badge-{{ 'emerald' if is_approve else ('red' if is_reject else 'review') }}">{{ dot_icon }} {{ log.action | upper }}</span>
+          </div>
+
+          <div class="audit-meta">
+            <span>
+              👤 Actor: <strong style="color:var(--text-primary);">{{ log.actor_name or 'Human Representative' }}</strong>
+            </span>
+            <span>
+              🕐 Time: {{ log.timestamp[:19].replace('T',' ') }} UTC
+            </span>
+          </div>
+
+          {% if log.note %}
+          <div class="audit-state-change" style="font-size:0.8rem;color:var(--text-secondary);">
+            📝 {{ log.note }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
       {% for d in audit_drafts %}
       {% set is_approved = d.status in ('approved','submitted','resolved') %}
       {% set dot_cls = 'approve' if is_approved else 'reject' %}
@@ -102,6 +139,7 @@
         </div>
       </div>
       {% endfor %}
+      {% endif %}
     </div>
     {% endif %}
   </div>
