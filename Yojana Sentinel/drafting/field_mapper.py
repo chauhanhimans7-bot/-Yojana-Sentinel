@@ -117,17 +117,23 @@ def map_fields(profile: dict, scheme: dict) -> tuple[list[dict], list[str]]:
     filled_fields: list[dict] = []
     unresolved_fields: list[str] = []
 
+    seen_field_ids = set()
     for field_def in application_fields:
         field_id   = field_def.get("field_id", "")
         field_type = field_def.get("type", "text")
         required   = field_def.get("required", True)
         inferable  = field_def.get("inferable", field_id in INFERABLE_FIELD_IDS)
 
+        if not field_id or field_id in seen_field_ids:
+            continue
+        seen_field_ids.add(field_id)
+
         # ── document_upload fields ─────────────────────────────────────────────
         if field_type == "document_upload":
             value, source = _resolve_document_field(field_id, documents_available)
             if source == "needs_input" and required:
-                unresolved_fields.append(field_id)
+                if field_id not in unresolved_fields:
+                    unresolved_fields.append(field_id)
             filled_fields.append({
                 "field_id": field_id,
                 "value":    value,

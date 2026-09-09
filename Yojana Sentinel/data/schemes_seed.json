@@ -106,7 +106,7 @@
         "required": true
       },
       {
-        "field_id": "marksheet_of_previous_qualifyi",
+        "field_id": "previous_marksheet",
         "label": "marksheet of previous qualifying exam",
         "type": "document_upload",
         "required": true
@@ -120,12 +120,6 @@
       {
         "field_id": "enrollment_certificate",
         "label": "institution enrollment certificate",
-        "type": "document_upload",
-        "required": true
-      },
-      {
-        "field_id": "previous_marksheet",
-        "label": "marksheet of previous qualifying exam",
         "type": "document_upload",
         "required": true
       }
@@ -406,7 +400,7 @@
         "required": true
       },
       {
-        "field_id": "bank_loan_account_details",
+        "field_id": "bank_passbook",
         "label": "bank loan account details",
         "type": "document_upload",
         "required": true
@@ -420,12 +414,6 @@
       {
         "field_id": "ration_card",
         "label": "ration card",
-        "type": "document_upload",
-        "required": true
-      },
-      {
-        "field_id": "bank_passbook",
-        "label": "bank loan account details",
         "type": "document_upload",
         "required": true
       }
@@ -780,18 +768,6 @@
         "label": "bank account details",
         "type": "document_upload",
         "required": true
-      },
-      {
-        "field_id": "doc_passport_size_photograph",
-        "label": "passport size photograph",
-        "type": "document_upload",
-        "required": true
-      },
-      {
-        "field_id": "bank_passbook",
-        "label": "bank account details",
-        "type": "document_upload",
-        "required": true
       }
     ],
     "deadline": null,
@@ -864,12 +840,6 @@
       },
       {
         "field_id": "pmjay_eligibility_letter_or_e",
-        "label": "PMJAY eligibility letter or e-card",
-        "type": "document_upload",
-        "required": true
-      },
-      {
-        "field_id": "doc_pmjay_eligibility_letter",
         "label": "PMJAY eligibility letter or e-card",
         "type": "document_upload",
         "required": true
@@ -1055,12 +1025,6 @@
         "label": "bank passbook",
         "type": "document_upload",
         "required": true
-      },
-      {
-        "field_id": "age_proof",
-        "label": "age proof (birth certificate or school certificate)",
-        "type": "document_upload",
-        "required": true
       }
     ],
     "deadline": null,
@@ -1156,12 +1120,6 @@
       {
         "field_id": "bank_passbook",
         "label": "bank passbook",
-        "type": "document_upload",
-        "required": true
-      },
-      {
-        "field_id": "residence_proof",
-        "label": "domicile certificate (UP)",
         "type": "document_upload",
         "required": true
       }
