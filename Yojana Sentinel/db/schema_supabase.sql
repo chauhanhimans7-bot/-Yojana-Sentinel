@@ -72,7 +72,18 @@ CREATE TABLE IF NOT EXISTS monitoring_event (
     detail               TEXT
 );
 
--- ─── 6. Performance Indexes ──────────────────────────────────────────────────
+-- ─── 6. ApprovalLog Table ────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS approval_log (
+    log_id      TEXT PRIMARY KEY,
+    draft_id    TEXT NOT NULL REFERENCES application_draft(draft_id) ON DELETE CASCADE,
+    action      TEXT NOT NULL CHECK (action IN ('approve','reject','edit','status_transition')),
+    actor_name  TEXT NOT NULL,
+    timestamp   TEXT NOT NULL,
+    note        TEXT,
+    extra       TEXT DEFAULT '{}'
+);
+
+-- ─── 7. Performance Indexes ──────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_scheme_category   ON scheme(category);
 CREATE INDEX IF NOT EXISTS idx_scheme_status     ON scheme(status);
 CREATE INDEX IF NOT EXISTS idx_scheme_deadline   ON scheme(deadline);
@@ -83,3 +94,6 @@ CREATE INDEX IF NOT EXISTS idx_draft_profile     ON application_draft(profile_id
 CREATE INDEX IF NOT EXISTS idx_draft_status      ON application_draft(status);
 CREATE INDEX IF NOT EXISTS idx_event_type        ON monitoring_event(event_type);
 CREATE INDEX IF NOT EXISTS idx_event_detected    ON monitoring_event(detected_at);
+CREATE INDEX IF NOT EXISTS idx_approval_log_draft ON approval_log(draft_id);
+CREATE INDEX IF NOT EXISTS idx_approval_log_ts   ON approval_log(timestamp);
+

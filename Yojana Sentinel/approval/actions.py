@@ -207,7 +207,11 @@ def reject_draft(
             f"Cannot reject draft '{draft_id}': status is '{status}'."
         )
 
-    _update_draft(draft_id, {"status": "rejected"})
+    _update_draft(draft_id, {
+        "status":      "rejected",
+        "approved_by": approver_name,     # Actor who rejected (reuse column for audit trail)
+        "approved_at": datetime.now(timezone.utc).isoformat(),  # Actual rejection timestamp
+    })
     log_action(draft_id=draft_id, action="reject", actor_name=approver_name, note=reason)
 
     log.info("Draft REJECTED | draft_id=%s | by=%s | reason=%s", draft_id, approver_name, reason[:80])

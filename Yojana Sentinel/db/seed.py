@@ -163,12 +163,45 @@ def load_json(path: Path) -> list[dict]:
         return []
 
 
+# DDL to ensure approval_log table exists on both SQLite and PostgreSQL
+_APPROVAL_LOG_DDL = """
+CREATE TABLE IF NOT EXISTS approval_log (
+    log_id      TEXT PRIMARY KEY,
+    draft_id    TEXT NOT NULL,
+    action      TEXT NOT NULL,
+    actor_name  TEXT NOT NULL,
+    timestamp   TEXT NOT NULL,
+    note        TEXT,
+    extra       TEXT DEFAULT '{}'
+)
+"""
+
+
+def ensure_approval_log_table(db) -> None:
+    """Ensure approval_log table exists — safe to run on every boot."""
+    try:
+        db.execute(_APPROVAL_LOG_DDL.strip())
+        # Also try adding index (ignore if already exists)
+        try:
+            db.execute("CREATE INDEX IF NOT EXISTS idx_approval_log_draft ON approval_log(draft_id)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_approval_log_ts ON approval_log(timestamp)")
+        except Exception:
+            pass
+        db.commit()
+        log.info("approval_log table ensured.")
+    except Exception as exc:
+        log.warning("Could not ensure approval_log table: %s", exc)
+
+
 def run(include_scraped: bool = False) -> None:
     with get_db() as db:
         # Initialize schema if local SQLite
         if not db.is_postgres and SCHEMA_PATH.exists():
             with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
                 db.conn.executescript(f.read())
+
+        # Ensure approval_log table exists on PostgreSQL too
+        ensure_approval_log_table(db)
 
         seed_schemes = load_json(SCHEMES_SEED)
         n_seed = upsert_schemes(db, seed_schemes)

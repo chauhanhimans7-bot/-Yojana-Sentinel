@@ -120,10 +120,10 @@
           <div class="audit-meta">
             <span>
               👤 Actor:
-              <strong style="color:var(--text-primary);">{{ d.approved_by or 'System / Human Representative' }}</strong>
+              <strong style="color:var(--text-primary);">{{ d.approved_by or 'Human Representative' }}</strong>
             </span>
             <span>
-              🕐 Time: {{ (d.approved_at or d.created_at or '')[:16].replace('T',' ') }} UTC
+              🕐 Time: {{ (d.approved_at or d.created_at or '')[:19].replace('T',' ') }} UTC
             </span>
           </div>
 

@@ -34,6 +34,7 @@ from tracking.status_store import update_status, mark_submitted, unmark_submitte
 from tracking.staleness_checker import find_stale_drafts
 
 from db.database import get_db
+from db.seed import ensure_approval_log_table
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,13 @@ app = Flask(
     static_url_path="/static",
 )
 app.secret_key = "yojana-sentinel-dev-key"
+
+# Ensure approval_log table is created on first request (required for Vercel/PostgreSQL)
+try:
+    with get_db() as _bootstrap_db:
+        ensure_approval_log_table(_bootstrap_db)
+except Exception as _bootstrap_exc:
+    logging.getLogger(__name__).warning("approval_log bootstrap skipped: %s", _bootstrap_exc)
 
 
 # ── DB Helpers ────────────────────────────────────────────────────────────────
