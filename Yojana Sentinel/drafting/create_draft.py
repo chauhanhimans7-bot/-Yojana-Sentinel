@@ -148,7 +148,7 @@ def create_draft(
         )
 
     # ── Staleness: return existing draft if present (unless force_new) ─────────
-    if not force_new and DB_PATH.exists():
+    if not force_new:
         existing = _get_existing_draft(profile_id, scheme_id)
         if existing:
             log.warning(
@@ -193,10 +193,7 @@ def create_draft(
     }
 
     # ── Step 4: Persist ────────────────────────────────────────────────────────
-    if DB_PATH.exists():
-        _save_draft(draft)
-    else:
-        log.warning("DB not found — draft produced in memory only, not persisted.")
+    _save_draft(draft)
 
     log.info(
         "Draft created | draft_id=%s | profile=%s | scheme=%s | unresolved=%d",
