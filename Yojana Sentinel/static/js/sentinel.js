@@ -136,10 +136,12 @@ function initApprovalModal() {
   if (!overlay) return;
 
   let pendingForm = null;
+  let triggeringBtn = null;
 
   qsa('.approve-trigger').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
+      triggeringBtn = btn;
       pendingForm = btn.closest('form');
       overlay.classList.add('open');
     });
@@ -151,8 +153,20 @@ function initApprovalModal() {
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
       if (pendingForm) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '⏳ Approving...';
+
+        if (triggeringBtn) {
+          triggeringBtn.disabled = true;
+          triggeringBtn.innerHTML = '⏳ Approving...';
+        }
+
         overlay.classList.remove('open');
-        pendingForm.submit();
+        if (typeof pendingForm.requestSubmit === 'function') {
+          pendingForm.requestSubmit();
+        } else {
+          pendingForm.submit();
+        }
       }
     });
   }
@@ -161,6 +175,7 @@ function initApprovalModal() {
     cancelBtn.addEventListener('click', () => {
       overlay.classList.remove('open');
       pendingForm = null;
+      triggeringBtn = null;
     });
   }
 
@@ -168,6 +183,7 @@ function initApprovalModal() {
     if (e.target === overlay) {
       overlay.classList.remove('open');
       pendingForm = null;
+      triggeringBtn = null;
     }
   });
 }
@@ -250,20 +266,37 @@ function initMonitoringHeartbeat() {
   // Dots already animate via CSS; just ensure they exist.
 }
 
-/* ── Form UX: prevent double-submit ─────────────────────────── */
+/* ── Form UX: event-driven request lifecycle loading guard ──── */
 function initFormGuards() {
-  qsa('form[data-once]').forEach(form => {
+  qsa('form').forEach(form => {
     form.addEventListener('submit', () => {
-      qsa('button[type="submit"]', form).forEach(btn => {
+      const submitBtns = qsa('button[type="submit"], button:not([type])', form)
+        .filter(btn => !btn.classList.contains('approve-trigger'));
+
+      submitBtns.forEach(btn => {
         btn.disabled = true;
-        const orig = btn.innerHTML;
-        btn.innerHTML = '⏳ Processing...';
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = orig;
-        }, 8000);
+        btn.classList.add('is-loading');
+        const customLoadingText = btn.dataset.loading;
+        if (customLoadingText) {
+          btn.innerHTML = customLoadingText;
+        } else {
+          btn.innerHTML = '⏳ Processing...';
+        }
       });
+      // NOTE: No setTimeout timer here.
+      // The button remains disabled and in loading state until the backend HTTP
+      // response completes and the browser unloads/navigates.
     });
+  });
+
+  // Handle bfcache (browser back/forward button navigation) restore
+  window.addEventListener('pageshow', e => {
+    if (e.persisted) {
+      qsa('button.is-loading, button[disabled]').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('is-loading');
+      });
+    }
   });
 }
 
