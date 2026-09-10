@@ -69,54 +69,88 @@ def _parse_json_col(d: dict, fields: list) -> dict:
     return d
 
 
+def get_pending_count() -> int:
+    """Fix 2: Lightweight scalar count — avoids full N+1 load_drafts() just for sidebar badge."""
+    try:
+        with get_db() as db:
+            row = db.fetchone("SELECT COUNT(*) AS cnt FROM application_draft WHERE status='drafted'")
+            return int(row["cnt"]) if row else 0
+    except Exception:
+        return 0
+
+
 def load_drafts(status_filter: str = None) -> list[dict]:
-    """Load ApplicationDrafts from DB with profile and scheme details."""
+    """Load ApplicationDrafts from DB with profile and scheme details.
+
+    Fix 1: Single JOIN query replaces the previous N+1 pattern (1 + 3*N queries).
+    All scheme, profile, and latest match-result data is fetched in one round trip.
+    """
     drafts = []
     try:
-        where_clause = f"WHERE status='{status_filter}'" if status_filter else ""
-        with get_db() as db:
-            rows = db.fetchall(
-                f"SELECT * FROM application_draft {where_clause} ORDER BY created_at DESC"
-            )
+        where_clause = "WHERE d.status = ?" if status_filter else ""
+        params = (status_filter,) if status_filter else ()
 
+        # Single LEFT JOIN across all four tables:
+        #   application_draft d
+        #   scheme s
+        #   citizen_profile p
+        #   match_result (latest per profile+scheme via subquery) m
+        sql = f"""
+            SELECT
+                d.*,
+                s.name        AS scheme_name,
+                s.deadline    AS scheme_deadline,
+                s.source_url  AS scheme_url,
+                s.category    AS scheme_category,
+                s.issuing_body,
+                m.match_status,
+                m.match_score,
+                m.reasoning   AS match_reasoning,
+                p.display_name          AS profile_name,
+                p.language_preference   AS lang_pref,
+                p.state,
+                p.district
+            FROM application_draft d
+            LEFT JOIN scheme s ON d.scheme_id = s.scheme_id
+            LEFT JOIN citizen_profile p ON d.profile_id = p.profile_id
+            LEFT JOIN (
+                SELECT m1.profile_id, m1.scheme_id,
+                       m1.match_status, m1.match_score, m1.reasoning
+                FROM match_result m1
+                INNER JOIN (
+                    SELECT profile_id, scheme_id, MAX(evaluated_at) AS max_eval
+                    FROM match_result
+                    GROUP BY profile_id, scheme_id
+                ) m2 ON m1.profile_id = m2.profile_id
+                     AND m1.scheme_id = m2.scheme_id
+                     AND m1.evaluated_at = m2.max_eval
+            ) m ON d.profile_id = m.profile_id AND d.scheme_id = m.scheme_id
+            {where_clause}
+            ORDER BY d.created_at DESC
+        """
+
+        with get_db() as db:
+            rows = db.fetchall(sql, params)
             for row in rows:
                 d = _parse_json_col(dict(row), ["filled_fields", "unresolved_fields"])
-
-                # Attach scheme info
-                scheme_row = db.fetchone(
-                    "SELECT name, deadline, source_url, category, issuing_body FROM scheme WHERE scheme_id=?",
-                    (d["scheme_id"],)
-                )
-                d["scheme_name"]     = scheme_row["name"]     if scheme_row else d["scheme_id"]
-                d["scheme_deadline"] = scheme_row["deadline"] if scheme_row else None
-                d["scheme_url"]      = scheme_row["source_url"] if scheme_row else "#"
-                d["scheme_category"] = scheme_row["category"]  if scheme_row else ""
-                d["issuing_body"]    = scheme_row["issuing_body"] if scheme_row else ""
-
-                # Attach match result (most recent)
-                mr_row = db.fetchone(
-                    """SELECT match_status, match_score, reasoning FROM match_result
-                       WHERE profile_id=? AND scheme_id=?
-                       ORDER BY evaluated_at DESC LIMIT 1""",
-                    (d["profile_id"], d["scheme_id"])
-                )
-                d["match_status"]    = mr_row["match_status"]  if mr_row else "unknown"
-                d["match_score"]     = mr_row["match_score"]   if mr_row else 0
-                d["match_reasoning"] = mr_row["reasoning"]     if mr_row else ""
-
-                # Attach profile display name
-                pr_row = db.fetchone(
-                    "SELECT display_name, language_preference, state, district FROM citizen_profile WHERE profile_id=?",
-                    (d["profile_id"],)
-                )
-                d["profile_name"] = pr_row["display_name"]       if pr_row else d["profile_id"]
-                d["lang_pref"]    = pr_row["language_preference"] if pr_row else "en"
-                d["citizen_location"] = f"{pr_row['district'] or ''}, {pr_row['state'] or ''}".strip(", ") if pr_row else ""
-
+                # Derive nullable joined fields gracefully
+                d.setdefault("scheme_name",     d.get("scheme_id", ""))
+                d.setdefault("scheme_deadline",  None)
+                d.setdefault("scheme_url",       "#")
+                d.setdefault("scheme_category",  "")
+                d.setdefault("issuing_body",     "")
+                d.setdefault("match_status",     "unknown")
+                d.setdefault("match_score",      0)
+                d.setdefault("match_reasoning",  "")
+                d.setdefault("profile_name",     d.get("profile_id", ""))
+                d.setdefault("lang_pref",        "en")
+                # Build location from joined state/district
+                district = d.pop("district", "") or ""
+                state    = d.pop("state",    "") or ""
+                d["citizen_location"] = f"{district}, {state}".strip(", ")
                 # Staleness check
                 d["is_stale"] = (d.get("status") == "stale")
                 d["staleness_reason"] = "Underlying scheme requirements were updated." if d["is_stale"] else ""
-
                 drafts.append(d)
     except Exception as exc:
         log.error("Error loading drafts: %s", exc)
@@ -192,7 +226,7 @@ def events_view():
         schemes=schemes,
         flash=flash,
         error=error,
-        pending_count=len(load_drafts(status_filter="drafted")),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
@@ -221,7 +255,7 @@ def matching_view():
         results=results,
         flash=flash,
         error=error,
-        pending_count=len(load_drafts(status_filter="drafted")),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
@@ -245,9 +279,21 @@ def tracking_view():
     flash = request.args.get("flash", "")
     error = request.args.get("error", "")
 
-    # Attach transition history to each draft
+    # Fix 3: Fetch ALL transition history in a single query, group in Python memory.
+    # Replaces the N+1 pattern of get_transition_history() called once per draft.
+    history_by_draft: dict = {}
+    try:
+        from approval.approval_log import get_all_logs
+        all_logs = get_all_logs()
+        for entry in all_logs:
+            did = entry.get("draft_id", "")
+            if did:
+                history_by_draft.setdefault(did, []).append(entry)
+    except Exception as exc:
+        log.warning("Could not bulk-load tracking history: %s", exc)
+
     for d in all_drafts:
-        d["history"] = get_transition_history(d["draft_id"])
+        d["history"] = history_by_draft.get(d["draft_id"], [])
 
     return render_template(
         "tracking.html",
@@ -255,7 +301,7 @@ def tracking_view():
         all_drafts=all_drafts,
         flash=flash,
         error=error,
-        pending_count=len([d for d in all_drafts if d.get("status") == "drafted"]),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
@@ -285,7 +331,7 @@ def history_view():
         page="history",
         drafts=drafts,
         audit_logs=audit_logs,
-        pending_count=len([d for d in drafts if d.get("status") == "drafted"]),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
@@ -321,7 +367,7 @@ def reject(draft_id: str):
         draft_id=draft_id,
         flash=flash,
         error=error,
-        pending_count=len(load_drafts(status_filter="drafted")),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
@@ -358,7 +404,7 @@ def edit(draft_id: str):
         draft=d,
         flash=flash,
         error=error,
-        pending_count=len(load_drafts(status_filter="drafted")),
+        pending_count=get_pending_count(),  # Fix 2
     )
 
 
