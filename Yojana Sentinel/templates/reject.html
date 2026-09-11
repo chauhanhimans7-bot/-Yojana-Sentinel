@@ -16,16 +16,36 @@
       <div class="card-title">❌ Confirm Draft Rejection</div>
     </div>
 
-    <form method="POST" data-once>
+    <form method="POST" id="reject-form">
       <div class="card-body">
         <div class="form-group">
           <label class="form-label">Your Name (for audit record)</label>
           <input type="text" name="approver_name" class="form-input" value="Family Representative" required>
         </div>
+
         <div class="form-group">
           <label class="form-label">Reason for Rejection</label>
-          <textarea name="reason" class="form-textarea" rows="5" required data-maxlength="500"
+          <textarea id="reason-textarea" name="reason" class="form-textarea" rows="5" required data-maxlength="500"
                     placeholder="Explain why this application draft is being rejected. This reason will be permanently recorded..."></textarea>
+
+          <!-- AI Assist Row -->
+          <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
+            <button id="ai-generate-btn" type="button"
+                    style="padding:6px 14px;font-size:0.8rem;border-radius:6px;border:1px solid var(--cyan);
+                           background:rgba(6,182,212,0.08);color:var(--cyan);cursor:pointer;
+                           display:flex;align-items:center;gap:6px;transition:opacity 0.2s;">
+              🤖 Generate with AI
+            </button>
+            <span id="ai-status-msg" style="font-size:0.78rem;color:var(--text-muted);"></span>
+          </div>
+
+          <div id="ai-error-msg" style="display:none;margin-top:8px;padding:8px 12px;border-radius:6px;
+               background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+               color:#fca5a5;font-size:0.8rem;"></div>
+
+          <div style="margin-top:6px;font-size:0.72rem;color:var(--text-muted);">
+            💡 Enter your reason first, then click <em>Generate with AI</em> to get a professionally worded version you can review and edit.
+          </div>
         </div>
       </div>
 
@@ -37,4 +57,77 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+
+  const DRAFT_ID      = {{ draft_id | tojson }};
+  const aiBtn         = document.getElementById('ai-generate-btn');
+  const reasonTA      = document.getElementById('reason-textarea');
+  const statusMsg     = document.getElementById('ai-status-msg');
+  const errorMsg      = document.getElementById('ai-error-msg');
+
+  function hideError() {
+    errorMsg.style.display = 'none';
+    errorMsg.textContent   = '';
+  }
+
+  function showError(msg) {
+    errorMsg.textContent   = msg;
+    errorMsg.style.display = 'block';
+  }
+
+  function setLoading(loading) {
+    aiBtn.disabled          = loading;
+    aiBtn.style.opacity     = loading ? '0.55' : '1';
+    aiBtn.style.cursor      = loading ? 'not-allowed' : 'pointer';
+    aiBtn.textContent       = loading ? '⏳ Generating...' : '🤖 Generate with AI';
+    statusMsg.textContent   = loading ? 'Calling AI — this may take a few seconds…' : '';
+  }
+
+  aiBtn.addEventListener('click', async function () {
+    hideError();
+
+    // Validate: human reason must be non-empty
+    const humanReason = reasonTA.value.trim();
+    if (!humanReason) {
+      showError('Please enter a reason before generating with AI.');
+      reasonTA.focus();
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Exactly one fetch() per click. Event-driven — no setTimeout.
+      const resp = await fetch(`/reject/${DRAFT_ID}/generate-reason`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ human_reason: humanReason }),
+      });
+
+      const payload = await resp.json();
+
+      if (!resp.ok || payload.error) {
+        showError(payload.error || 'AI generation failed. Please write the reason manually.');
+        // Preserve original human reason — do NOT clear the textarea
+      } else {
+        reasonTA.value = payload.generated_reason || humanReason;
+        statusMsg.textContent = '✓ AI-generated text placed below. Review and edit as needed before confirming.';
+        statusMsg.style.color = 'var(--emerald)';
+        setTimeout(() => { statusMsg.textContent = ''; statusMsg.style.color = ''; }, 6000);
+      }
+    } catch (networkErr) {
+      showError('AI generation failed (network error). Please write the reason manually.');
+      // Preserve original human reason
+    } finally {
+      // Re-enable button only after the actual request resolves (event-driven)
+      setLoading(false);
+    }
+  });
+})();
+</script>
 {% endblock %}

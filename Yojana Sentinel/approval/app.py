@@ -348,6 +348,119 @@ def approve(draft_id: str):
         return redirect(url_for("index", error=str(e)))
 
 
+@app.route("/reject/<draft_id>/generate-reason", methods=["POST"])
+def generate_rejection_reason(draft_id: str):
+    """
+    AI-assisted rejection reason drafting.
+
+    SAFETY CONTRACT:
+    - Does NOT modify draft status.
+    - Does NOT write audit logs.
+    - Does NOT reject the draft.
+    - Does NOT expose PII (Aadhaar, mobile, bank details) to the LLM.
+    - Requires a non-empty human reason as mandatory input.
+    - Makes exactly ONE Groq call per request.
+    - Returns JSON: {generated_reason: str} or {error: str}
+    """
+    data = request.get_json(silent=True) or {}
+    human_reason = (data.get("human_reason") or "").strip()
+
+    if not human_reason:
+        return jsonify({"error": "Please enter a reason before generating with AI."}), 400
+
+    # Load safe draft context — no PII fields
+    draft_context = {}
+    try:
+        with get_db() as db:
+            row = db.fetchone(
+                """SELECT d.scheme_id, d.unresolved_fields,
+                          s.name AS scheme_name,
+                          m.match_score, m.match_status, m.missing_info
+                   FROM application_draft d
+                   LEFT JOIN scheme s ON d.scheme_id = s.scheme_id
+                   LEFT JOIN (
+                       SELECT profile_id, scheme_id, match_score, match_status, missing_info
+                       FROM match_result
+                       WHERE (profile_id, scheme_id, evaluated_at) IN (
+                           SELECT profile_id, scheme_id, MAX(evaluated_at)
+                           FROM match_result GROUP BY profile_id, scheme_id
+                       )
+                   ) m ON d.profile_id = m.profile_id AND d.scheme_id = m.scheme_id
+                   WHERE d.draft_id = ?""",
+                (draft_id,)
+            )
+            if row:
+                draft_context["scheme_name"] = row.get("scheme_name") or row.get("scheme_id", "")
+                draft_context["match_score"] = row.get("match_score", 0)
+                draft_context["match_status"] = row.get("match_status", "")
+                # Parse missing_info safely
+                raw_missing = row.get("missing_info", "[]") or "[]"
+                try:
+                    missing = json.loads(raw_missing) if isinstance(raw_missing, str) else (raw_missing or [])
+                    draft_context["missing_fields"] = missing[:5]  # limit exposure
+                except Exception:
+                    draft_context["missing_fields"] = []
+    except Exception as ctx_exc:
+        log.warning("Could not load draft context for AI rejection: %s", ctx_exc)
+
+    # Build Groq prompt
+    context_lines = [f"Scheme: {draft_context.get('scheme_name', 'Unknown')}"]
+    if draft_context.get("match_score") is not None:
+        context_lines.append(f"Match score: {draft_context['match_score']}/100 ({draft_context.get('match_status', '')})")
+    if draft_context.get("missing_fields"):
+        context_lines.append(f"Missing required fields: {', '.join(str(f) for f in draft_context['missing_fields'])}")
+
+    system_prompt = (
+        "You are an administrative assistant helping write clear, professional rejection "
+        "notices for government welfare scheme applications.\n\n"
+        "STRICT RULES:\n"
+        "1. Base the rejection notice ONLY on the human-provided reason given below.\n"
+        "2. Use the application context (scheme name, match score, missing fields) ONLY "
+        "   if it directly supports the human's stated reason. Do not invent facts.\n"
+        "3. Do NOT invent eligibility rules, missing evidence, or facts not mentioned.\n"
+        "4. Write in clear, formal, respectful English appropriate for an official record.\n"
+        "5. Keep the output concise: 2-4 sentences maximum.\n"
+        "6. Do NOT include greetings, salutations, or fictional applicant details.\n"
+        "7. Your output will be placed directly into an audit log — write only the rejection reason text."
+    )
+
+    user_prompt = (
+        f"Application context:\n{chr(10).join(context_lines)}\n\n"
+        f"Human-provided rejection reason (MANDATORY primary input):\n{human_reason}\n\n"
+        "Rewrite the above reason as a clear, professional rejection notice. "
+        "Preserve all the key points from the human reason. Do not add unsupported claims."
+    )
+
+    # Call Groq using the existing shared client pattern
+    try:
+        import os as _os
+        from groq import Groq
+        api_key = _os.getenv("GROQ_API_KEY") or _os.getenv("GROQ_API_KEY_2")
+        if not api_key:
+            return jsonify({"error": "AI generation unavailable: GROQ_API_KEY not configured."}), 503
+
+        client = Groq(api_key=api_key)
+        log.info("AI rejection reason | draft=%s | calling Groq", draft_id)
+
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            temperature=0.3,
+            max_tokens=200,
+            timeout=20,
+        )
+        generated = response.choices[0].message.content.strip()
+        log.info("AI rejection reason generated (%d chars) for draft=%s", len(generated), draft_id)
+        return jsonify({"generated_reason": generated})
+
+    except Exception as exc:
+        log.warning("Groq call failed for AI rejection reason (draft=%s): %s", draft_id, exc)
+        return jsonify({"error": "AI generation failed. Please write the reason manually."}), 500
+
+
 @app.route("/reject/<draft_id>", methods=["GET", "POST"])
 def reject(draft_id: str):
     if request.method == "POST":
@@ -367,7 +480,7 @@ def reject(draft_id: str):
         draft_id=draft_id,
         flash=flash,
         error=error,
-        pending_count=get_pending_count(),  # Fix 2
+        pending_count=get_pending_count(),
     )
 
 
