@@ -11,6 +11,7 @@ Features:
   - Context manager and helper functions for execute / fetch / commit
 """
 
+import sys
 import os
 import json
 import logging
@@ -25,10 +26,23 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 ROOT    = Path(__file__).resolve().parent.parent
-DB_PATH = ROOT / "data" / "yojana_sentinel.db"
 
-# Check for PostgreSQL connection string in environment variables
-DATABASE_URL = os.getenv("SUPABASE_DB_URL") or os.getenv("DATABASE_URL")
+# Detect test execution (unittest, pytest, TESTING env var)
+IS_TESTING = bool(
+    os.getenv("TESTING") == "1"
+    or os.getenv("PYTEST_CURRENT_TEST")
+    or "pytest" in sys.modules
+    or any("unittest" in arg or "pytest" in arg for arg in sys.argv)
+)
+
+if IS_TESTING and not os.getenv("ALLOW_PROD_DB_IN_TEST"):
+    # Force isolated local SQLite test database for all unit tests
+    DATABASE_URL = os.getenv("TEST_DATABASE_URL")
+    DB_PATH = ROOT / "data" / "test_yojana_sentinel.db"
+    log.info("🧪 Test Environment Active: Using isolated test database at %s", DATABASE_URL or DB_PATH)
+else:
+    DATABASE_URL = os.getenv("SUPABASE_DB_URL") or os.getenv("DATABASE_URL")
+    DB_PATH = ROOT / "data" / "yojana_sentinel.db"
 
 # Attempt to import psycopg2 if PostgreSQL URL is present
 has_psycopg2 = False
@@ -72,6 +86,34 @@ class DBConnection:
             self.conn = sqlite3.connect(str(DB_PATH))
             self.conn.row_factory = sqlite3.Row
             self.conn.execute("PRAGMA foreign_keys=ON")
+            
+            # Auto-provision tables & seed data if SQLite database is newly created
+            try:
+                cur = self.conn.cursor()
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='application_draft'")
+                if not cur.fetchone():
+                    schema_file = ROOT / "db" / "schema.sql"
+                    if schema_file.exists():
+                        with open(schema_file, "r", encoding="utf-8") as f:
+                            self.conn.executescript(f.read())
+                    self.conn.execute("""
+                        CREATE TABLE IF NOT EXISTS approval_log (
+                            log_id TEXT PRIMARY KEY,
+                            draft_id TEXT NOT NULL,
+                            action TEXT NOT NULL,
+                            actor_name TEXT NOT NULL,
+                            timestamp TEXT NOT NULL,
+                            note TEXT,
+                            extra TEXT DEFAULT '{}'
+                        )
+                    """)
+                    self.conn.commit()
+
+                    # Seed scheme and profile tables to satisfy foreign key constraints
+                    from db.seed import run as run_seed
+                    run_seed(include_scraped=False)
+            except Exception as exc:
+                log.warning("SQLite schema auto-init skipped: %s", exc)
         return self
 
     def __enter__(self):
