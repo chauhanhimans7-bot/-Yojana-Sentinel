@@ -337,6 +337,17 @@ def history_view():
 
 # ── Approval / Rejection Handlers ───────────────────────────────
 
+@app.route("/approve/<draft_id>", methods=["POST"])
+def approve(draft_id: str):
+    approver_name  = request.form.get("approver_name", "Family Representative")
+    confirm_anyway = bool(request.form.get("confirm_anyway", False))
+    try:
+        approve_draft(draft_id, approver_name, confirm_anyway=confirm_anyway)
+        return redirect(url_for("index", flash="Application draft approved! It is now tracked under Application Tracking."))
+    except ApprovalError as e:
+        return redirect(url_for("index", error=str(e)))
+
+
 @app.route("/reject/<draft_id>/generate-reason", methods=["POST"])
 def generate_rejection_reason(draft_id: str):
     """
