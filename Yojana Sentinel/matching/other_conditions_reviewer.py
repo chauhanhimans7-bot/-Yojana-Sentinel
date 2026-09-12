@@ -93,21 +93,34 @@ def _call_llm(profile: dict, condition: str, scheme_name: str) -> tuple[Conditio
     if client is None:
         return "unclear", "LLM client unavailable — GROQ_API_KEY not set or groq package missing."
 
-    try:
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": _build_user_prompt(profile, condition, scheme_name)},
-            ],
-            temperature=0.0,   # Force deterministic output for eligibility decisions
-            max_tokens=300,
-            timeout=15,
-        )
-        raw = response.choices[0].message.content.strip()
-        log.debug("LLM raw response for condition '%s': %s", condition[:80], raw)
+    models_to_try = ["groq/compound-mini", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.1-8b-instant"]
+    response = None
+    last_err = None
 
-        # Parse JSON
+    for model_name in models_to_try:
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": _build_user_prompt(profile, condition, scheme_name)},
+                ],
+                temperature=0.0,   # Force deterministic output for eligibility decisions
+                max_tokens=300,
+                timeout=15,
+            )
+            break
+        except Exception as exc:
+            last_err = exc
+            log.warning("Model %s failed in other_conditions_reviewer: %s", model_name, exc)
+
+    if not response or not response.choices:
+        return "unclear", f"LLM call failed ({str(last_err)})."
+
+    raw = response.choices[0].message.content.strip()
+    log.debug("LLM raw response for condition '%s': %s", condition[:80], raw)
+
+    try:
         parsed = json.loads(raw)
         verdict = parsed.get("verdict", "unclear").strip().lower()
         reasoning = parsed.get("reasoning", "No reasoning provided by LLM.").strip()

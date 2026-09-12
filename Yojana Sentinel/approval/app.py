@@ -335,18 +335,7 @@ def history_view():
     )
 
 
-# ── Approval / Rejection Handlers ─────────────────────────────────────────────
-
-@app.route("/approve/<draft_id>", methods=["POST"])
-def approve(draft_id: str):
-    approver_name  = request.form.get("approver_name", "Family Representative")
-    confirm_anyway = bool(request.form.get("confirm_anyway", False))
-    try:
-        approve_draft(draft_id, approver_name, confirm_anyway=confirm_anyway)
-        return redirect(url_for("index", flash="✅ Application draft approved! It is now tracked under Application Tracking."))
-    except ApprovalError as e:
-        return redirect(url_for("index", error=str(e)))
-
+# ── Approval / Rejection Handlers ───────────────────────────────
 
 @app.route("/reject/<draft_id>/generate-reason", methods=["POST"])
 def generate_rejection_reason(draft_id: str):
@@ -372,34 +361,23 @@ def generate_rejection_reason(draft_id: str):
     draft_context = {}
     try:
         with get_db() as db:
-            row = db.fetchone(
-                """SELECT d.scheme_id, d.unresolved_fields,
-                          s.name AS scheme_name,
-                          m.match_score, m.match_status, m.missing_info
-                   FROM application_draft d
-                   LEFT JOIN scheme s ON d.scheme_id = s.scheme_id
-                   LEFT JOIN (
-                       SELECT profile_id, scheme_id, match_score, match_status, missing_info
-                       FROM match_result
-                       WHERE (profile_id, scheme_id, evaluated_at) IN (
-                           SELECT profile_id, scheme_id, MAX(evaluated_at)
-                           FROM match_result GROUP BY profile_id, scheme_id
-                       )
-                   ) m ON d.profile_id = m.profile_id AND d.scheme_id = m.scheme_id
-                   WHERE d.draft_id = ?""",
-                (draft_id,)
-            )
-            if row:
-                draft_context["scheme_name"] = row.get("scheme_name") or row.get("scheme_id", "")
-                draft_context["match_score"] = row.get("match_score", 0)
-                draft_context["match_status"] = row.get("match_status", "")
-                # Parse missing_info safely
-                raw_missing = row.get("missing_info", "[]") or "[]"
-                try:
-                    missing = json.loads(raw_missing) if isinstance(raw_missing, str) else (raw_missing or [])
-                    draft_context["missing_fields"] = missing[:5]  # limit exposure
-                except Exception:
-                    draft_context["missing_fields"] = []
+            d_row = db.fetchone("SELECT profile_id, scheme_id FROM application_draft WHERE draft_id = ?", (draft_id,))
+            if d_row:
+                s_row = db.fetchone("SELECT name FROM scheme WHERE scheme_id = ?", (d_row["scheme_id"],))
+                mr_row = db.fetchone(
+                    "SELECT match_score, match_status, missing_info FROM match_result WHERE profile_id = ? AND scheme_id = ? ORDER BY evaluated_at DESC LIMIT 1",
+                    (d_row["profile_id"], d_row["scheme_id"])
+                )
+                draft_context["scheme_name"] = s_row["name"] if (s_row and s_row.get("name")) else d_row["scheme_id"]
+                if mr_row:
+                    draft_context["match_score"] = mr_row.get("match_score", 0)
+                    draft_context["match_status"] = mr_row.get("match_status", "")
+                    raw_missing = mr_row.get("missing_info", "[]") or "[]"
+                    try:
+                        missing = json.loads(raw_missing) if isinstance(raw_missing, str) else (raw_missing or [])
+                        draft_context["missing_fields"] = missing[:5]
+                    except Exception:
+                        draft_context["missing_fields"] = []
     except Exception as ctx_exc:
         log.warning("Could not load draft context for AI rejection: %s", ctx_exc)
 
@@ -431,34 +409,51 @@ def generate_rejection_reason(draft_id: str):
         "Preserve all the key points from the human reason. Do not add unsupported claims."
     )
 
-    # Call Groq using the existing shared client pattern
+    # Call Groq using active models with fallbacks
     try:
         import os as _os
         from groq import Groq
         api_key = _os.getenv("GROQ_API_KEY") or _os.getenv("GROQ_API_KEY_2")
+        if api_key:
+            api_key = api_key.strip("'\" \t\r\n")
         if not api_key:
-            return jsonify({"error": "AI generation unavailable: GROQ_API_KEY not configured."}), 503
+            return jsonify({"error": "AI generation unavailable: GROQ_API_KEY not configured in environment."}), 503
 
         client = Groq(api_key=api_key)
         log.info("AI rejection reason | draft=%s | calling Groq", draft_id)
 
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user",   "content": user_prompt},
-            ],
-            temperature=0.3,
-            max_tokens=200,
-            timeout=20,
-        )
+        models_to_try = ["groq/compound-mini", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.1-8b-instant"]
+        response = None
+        last_err = None
+
+        for model_name in models_to_try:
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user",   "content": user_prompt},
+                    ],
+                    temperature=0.3,
+                    max_tokens=200,
+                    timeout=20,
+                )
+                log.info("AI rejection reason succeeded with model %s for draft=%s", model_name, draft_id)
+                break
+            except Exception as m_exc:
+                last_err = m_exc
+                log.warning("Model %s failed: %s, trying next...", model_name, m_exc)
+
+        if not response or not response.choices:
+            raise last_err or Exception("All Groq models failed")
+
         generated = response.choices[0].message.content.strip()
         log.info("AI rejection reason generated (%d chars) for draft=%s", len(generated), draft_id)
         return jsonify({"generated_reason": generated})
 
     except Exception as exc:
         log.warning("Groq call failed for AI rejection reason (draft=%s): %s", draft_id, exc)
-        return jsonify({"error": "AI generation failed. Please write the reason manually."}), 500
+        return jsonify({"error": f"AI generation failed ({str(exc)}). Please write the reason manually."}), 500
 
 
 @app.route("/reject/<draft_id>", methods=["GET", "POST"])
@@ -525,6 +520,6 @@ def edit(draft_id: str):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    print("\n🛡️  Yojana Sentinel — Unified Web Application")
+    print("\n[Sentinel] Yojana Sentinel -- Unified Web Application")
     print("   Running on http://127.0.0.1:5000\n")
     app.run(host="127.0.0.1", port=5000, debug=False)
