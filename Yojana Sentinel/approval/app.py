@@ -338,10 +338,38 @@ def trigger_event_api():
 
 @app.route("/demo/reset", methods=["POST"])
 def demo_reset():
-    """Reset pending drafts to 0 for live stage demo (0 -> 1 draft workflow)."""
+    """Reset pending drafts to 0 for live stage demo without violating CHECK constraints."""
     try:
         with get_db() as db:
-            db.execute("UPDATE application_draft SET status = 'archived' WHERE status = 'drafted'")
+            # 1. Ensure demo_archive_draft table exists (portable DDL)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS demo_archive_draft (
+                    draft_id TEXT PRIMARY KEY,
+                    profile_id TEXT,
+                    scheme_id TEXT,
+                    filled_fields TEXT,
+                    unresolved_fields TEXT,
+                    draft_text TEXT,
+                    status TEXT,
+                    created_at TEXT,
+                    approved_by TEXT,
+                    approved_at TEXT
+                )
+            """)
+            # 2. Clear any existing archive matching current drafted IDs to prevent duplicate PK conflict
+            db.execute("""
+                DELETE FROM demo_archive_draft 
+                WHERE draft_id IN (SELECT draft_id FROM application_draft WHERE status = 'drafted')
+            """)
+            # 3. Copy drafted rows into demo_archive_draft
+            db.execute("""
+                INSERT INTO demo_archive_draft
+                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at)
+                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at
+                FROM application_draft WHERE status = 'drafted'
+            """)
+            # 4. Remove drafted rows from application_draft table
+            db.execute("DELETE FROM application_draft WHERE status = 'drafted'")
             db.commit()
         return redirect(url_for("index", flash="🔄 Demo state reset: 0 pending drafts on dashboard. Go to Monitoring to trigger live event!"))
     except Exception as exc:
@@ -351,14 +379,43 @@ def demo_reset():
 
 @app.route("/demo/restore", methods=["POST"])
 def demo_restore():
-    """Restore all archived demo drafts back to dashboard."""
+    """Restore all archived demo drafts back to dashboard application_draft table."""
     try:
         with get_db() as db:
-            db.execute("UPDATE application_draft SET status = 'drafted' WHERE status = 'archived'")
+            # Ensure table exists
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS demo_archive_draft (
+                    draft_id TEXT PRIMARY KEY,
+                    profile_id TEXT,
+                    scheme_id TEXT,
+                    filled_fields TEXT,
+                    unresolved_fields TEXT,
+                    draft_text TEXT,
+                    status TEXT,
+                    created_at TEXT,
+                    approved_by TEXT,
+                    approved_at TEXT
+                )
+            """)
+            # 1. Clear matching IDs from application_draft if any exist
+            db.execute("""
+                DELETE FROM application_draft 
+                WHERE draft_id IN (SELECT draft_id FROM demo_archive_draft)
+            """)
+            # 2. Restore rows into application_draft with valid status 'drafted'
+            db.execute("""
+                INSERT INTO application_draft
+                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at)
+                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, 'drafted', created_at, approved_by, approved_at
+                FROM demo_archive_draft
+            """)
+            # 3. Clear archive table
+            db.execute("DELETE FROM demo_archive_draft")
             db.commit()
         return redirect(url_for("index", flash="✅ Restored all demo drafts to dashboard."))
     except Exception as exc:
-        return redirect(url_for("index", error=str(exc)))
+        log.error("Demo restore failed: %s", exc)
+        return redirect(url_for("index", error=f"Demo restore failed: {exc}"))
 
 
 # ── Route 3: Matching Engine Dashboard (/matching) ────────────────────────────

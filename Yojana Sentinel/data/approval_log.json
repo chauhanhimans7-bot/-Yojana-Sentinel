@@ -1,11 +1,47 @@
 [
   {
-    "log_id": "log-81d55101d8",
+    "log_id": "log-ac0bb462b8",
     "draft_id": "test-postgres-e2e-draft",
     "action": "reject",
     "actor_name": "Test User (Postgres Integration)",
-    "timestamp": "2026-09-12T09:59:07.242907+00:00",
+    "timestamp": "2026-09-12T10:33:16.813318+00:00",
     "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-ac0bb462b8",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-12T10:33:16.813318+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-fa771f7727",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-12T10:32:08.673729+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-45c78afa98",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-12T10:31:47.570674+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-eb182c2dcf",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T10:31:19.697426+00:00",
+    "note": "Manual rejection without AI.",
     "extra": {}
   },
   {
