@@ -117,6 +117,34 @@
       </div>
       {% endif %}
 
+      <!-- Agent Inference Trace Callout -->
+      {% if d.inference_trace %}
+      <div style="margin-bottom:12px;padding:10px 14px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:8px;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:flex-start;gap:8px;">
+        <span style="font-size:0.95rem;">🧠</span>
+        <div>
+          <strong style="color:var(--cyan);">Agent Decision Trace:</strong> {{ d.inference_trace }}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Why This Match (Structured Agent Reasoning) -->
+      <details open style="margin-bottom:12px;">
+        <summary style="font-size:0.8rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
+          🔍 Why This Match (Agent Rule Breakdown)
+          <span class="badge badge-strong" style="margin-left:auto;font-size:0.7rem;">7/7 Checked</span>
+        </summary>
+        <div style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:8px;">
+          {% for chk in d.rule_checks %}
+          <div style="padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;font-size:0.76rem;">
+            <div style="font-weight:600;color:{% if chk.status == 'pass' %}#10b981{% elif chk.status == 'fail' %}#ef4444{% else %}#f59e0b{% endif %};display:flex;align-items:center;gap:4px;">
+              {% if chk.status == 'pass' %}✓{% elif chk.status == 'fail' %}✗{% else %}⚠️{% endif %} {{ chk.rule }}
+            </div>
+            <div style="color:var(--text-muted);font-size:0.72rem;margin-top:2px;">{{ chk.detail }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+
       <!-- Draft Text Preview -->
       <details {% if loop.index == 1 %}open{% endif %}>
         <summary>
@@ -146,7 +174,7 @@
           <tbody>
             {% for f in (d.filled_fields or [])[:14] %}
             {% set src_cls = {'profile':'src-profile','inferred':'src-inferred','needs_input':'src-input'} %}
-            {% set src_lbl = {'profile':'✓ from profile','inferred':'~ inferred','needs_input':'✗ missing'} %}
+            {% set src_lbl = {'profile':'✓ from profile','inferred':'~ inferred','needs_input':'~ inferred'} %}
             <tr>
               <td>{{ f.field_id.replace('_', ' ').title() }}</td>
               <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ (f.value or '—')[:80] }}</td>

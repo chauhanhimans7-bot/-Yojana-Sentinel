@@ -1,0 +1,98 @@
+[
+  {
+    "operation": "1. Dashboard GET /",
+    "total_ms": 1474.75,
+    "db_query_count": 2,
+    "db_query_ms": 660.53,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "2. Matching Engine GET /matching",
+    "total_ms": 2856.16,
+    "db_query_count": 4,
+    "db_query_ms": 862.58,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "3. Monitoring & Demo GET /events",
+    "total_ms": 3563.25,
+    "db_query_count": 6,
+    "db_query_ms": 1542.82,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "4. POST /events/trigger",
+    "total_ms": 3401.39,
+    "db_query_count": 4,
+    "db_query_ms": 2095.3,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "5. POST /matching/run",
+    "total_ms": 28675.99,
+    "db_query_count": 42,
+    "db_query_ms": 9119.91,
+    "groq_call_count": 1,
+    "groq_call_ms": 3786.56
+  },
+  {
+    "operation": "6. POST /edit/<draft_id>",
+    "total_ms": 7237.25,
+    "db_query_count": 10,
+    "db_query_ms": 2444.56,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "7. POST /approve/<draft_id>",
+    "total_ms": 878.85,
+    "db_query_count": 2,
+    "db_query_ms": 384.87,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "8. POST /reject/<draft_id>",
+    "total_ms": 4624.53,
+    "db_query_count": 6,
+    "db_query_ms": 1707.17,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "9. Application Tracking GET /tracking",
+    "total_ms": 2997.53,
+    "db_query_count": 6,
+    "db_query_ms": 1531.37,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "10. Audit History GET /history",
+    "total_ms": 3815.9,
+    "db_query_count": 6,
+    "db_query_ms": 1988.98,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "11. POST /tracking/update (submitted)",
+    "total_ms": 1379.03,
+    "db_query_count": 2,
+    "db_query_ms": 599.54,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  },
+  {
+    "operation": "12. POST /tracking/update (resolved)",
+    "total_ms": 1129.94,
+    "db_query_count": 2,
+    "db_query_ms": 391.48,
+    "groq_call_count": 0,
+    "groq_call_ms": 0.0
+  }
+]

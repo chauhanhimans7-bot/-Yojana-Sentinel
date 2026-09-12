@@ -1,0 +1,339 @@
+[
+  {
+    "log_id": "log-81d55101d8",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-12T09:59:07.242907+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-81d55101d8",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-12T09:59:07.242907+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-724359c6b7",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-12T09:59:01.350361+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-7a660344da",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-12T09:58:52.094619+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-c4b2825d35",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:58:36.815764+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-a7917a7e98",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:45:28.929225+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-c2ddcb67fe",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-12T09:25:22.593205+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-dedf39dcc9",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-12T09:25:10.470392+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-9b3e6c6c9f",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:24:40.753530+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-d16087e6a5",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:16:53.171014+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-240e9b83db",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:15:28.578366+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-9b41f807c1",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:06:29.823143+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-ce966c86ef",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:05:54.361774+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-99443c8c01",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-12T09:05:13.708061+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-2b88ac1759",
+    "draft_id": "draft-2502599c2e60",
+    "action": "reject",
+    "actor_name": "Family Representative",
+    "timestamp": "2026-09-11T08:42:09.512250+00:00",
+    "note": "Low match score and required documents are missing. Checked by admin.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-e89dc99a77",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-11T08:18:07.969163+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-d5a3c204c0",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-11T08:17:54.315672+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-0925d5bcf4",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-11T08:17:44.524405+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-a4d323bb00",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-11T08:17:15.930058+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-f0ab1596e0",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-11T08:13:41.238591+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-771be8659e",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-11T08:12:17.976372+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-a0771f783e",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-11T08:10:59.744026+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-a6256873f3",
+    "draft_id": "test-ai-reject-draft",
+    "action": "reject",
+    "actor_name": "Test Auditor",
+    "timestamp": "2026-09-11T08:10:10.893320+00:00",
+    "note": "Manual rejection without AI.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-9e35497b8b",
+    "draft_id": "draft-8ef7ab16f642",
+    "action": "reject",
+    "actor_name": "Benchmark Rejector",
+    "timestamp": "2026-09-10T10:34:31.646887+00:00",
+    "note": "Benchmark test rejection",
+    "extra": {}
+  },
+  {
+    "log_id": "log-c7274a667d",
+    "draft_id": "draft-8ef7ab16f642",
+    "action": "edit",
+    "actor_name": "Benchmark Editor",
+    "timestamp": "2026-09-10T10:34:26.322134+00:00",
+    "note": "Edited fields: . Unresolved now: 7.",
+    "extra": {
+      "edited_field_ids": []
+    }
+  },
+  {
+    "log_id": "log-7657182f8f",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-10T10:32:56.414889+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-3e86f47f6a",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-10T10:32:45.989223+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-400692b25c",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-10T10:32:38.218645+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-945fc81459",
+    "draft_id": "draft-f4b0f28e959c",
+    "action": "reject",
+    "actor_name": "Benchmark Rejector",
+    "timestamp": "2026-09-10T10:19:40.458084+00:00",
+    "note": "Benchmark test rejection",
+    "extra": {}
+  },
+  {
+    "log_id": "log-bc2d6d25e2",
+    "draft_id": "draft-f4b0f28e959c",
+    "action": "edit",
+    "actor_name": "Benchmark Editor",
+    "timestamp": "2026-09-10T10:19:35.472920+00:00",
+    "note": "Edited fields: . Unresolved now: 6.",
+    "extra": {
+      "edited_field_ids": []
+    }
+  },
+  {
+    "log_id": "log-40d692d0c8",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-10T10:04:24.240443+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-47b2e41e36",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-10T10:04:01.576104+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-d43931436e",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-10T10:03:47.889028+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  },
+  {
+    "log_id": "log-f411bb8b59",
+    "draft_id": "test-postgres-e2e-draft",
+    "action": "reject",
+    "actor_name": "Test User (Postgres Integration)",
+    "timestamp": "2026-09-10T09:17:16.149657+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-5280d1dd5f",
+    "draft_id": "draft-49b3bd2d097b",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-10T09:15:56.481191+00:00",
+    "note": "Production E2E audit verification",
+    "extra": {}
+  },
+  {
+    "log_id": "log-fe98492ad0",
+    "draft_id": "test-draft-safety-check",
+    "action": "approve",
+    "actor_name": "Safety Inspector",
+    "timestamp": "2026-09-10T08:57:59.850258+00:00",
+    "note": "All fields resolved at time of approval.",
+    "extra": {}
+  },
+  {
+    "log_id": "log-eac5d7a31c",
+    "draft_id": "test-draft-bug2-rejection",
+    "action": "reject",
+    "actor_name": "Test User",
+    "timestamp": "2026-09-10T08:57:51.626556+00:00",
+    "note": "Manual E2E rejection test",
+    "extra": {}
+  }
+]

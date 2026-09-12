@@ -112,6 +112,11 @@
       </div>
       <div class="flex-center gap-8">
         {% block header_actions %}{% endblock %}
+        <form method="POST" action="{{ url_for('demo_reset') }}" style="margin:0;" data-no-transition>
+          <button class="btn btn-ghost btn-sm" type="submit" title="Reset pending drafts to 0 for live stage demo" style="font-size:0.75rem;color:var(--amber);border:1px solid rgba(245,158,11,0.3);">
+            🔄 Reset Demo
+          </button>
+        </form>
       </div>
     </div>
   </div>
