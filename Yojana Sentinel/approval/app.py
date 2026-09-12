@@ -336,42 +336,67 @@ def trigger_event_api():
 
 # ── Demo Reset Routes ──────────────────────────────────────────────────────────
 
+_ARCHIVE_DRAFT_DDL = """
+CREATE TABLE IF NOT EXISTS demo_archive_draft (
+    draft_id TEXT PRIMARY KEY,
+    profile_id TEXT,
+    scheme_id TEXT,
+    filled_fields TEXT,
+    unresolved_fields TEXT,
+    draft_text TEXT,
+    status TEXT,
+    created_at TEXT,
+    approved_by TEXT,
+    approved_at TEXT
+)
+"""
+
+_ARCHIVE_LOG_DDL = """
+CREATE TABLE IF NOT EXISTS demo_archive_log (
+    log_id TEXT PRIMARY KEY,
+    draft_id TEXT,
+    action TEXT,
+    actor_name TEXT,
+    timestamp TEXT,
+    note TEXT,
+    extra TEXT
+)
+"""
+
+
 @app.route("/demo/reset", methods=["POST"])
 def demo_reset():
-    """Reset pending drafts to 0 for live stage demo without violating CHECK constraints."""
+    """Archive ALL application_draft rows and ALL approval_log rows for a clean demo slate."""
     try:
         with get_db() as db:
-            # 1. Ensure demo_archive_draft table exists (portable DDL)
-            db.execute("""
-                CREATE TABLE IF NOT EXISTS demo_archive_draft (
-                    draft_id TEXT PRIMARY KEY,
-                    profile_id TEXT,
-                    scheme_id TEXT,
-                    filled_fields TEXT,
-                    unresolved_fields TEXT,
-                    draft_text TEXT,
-                    status TEXT,
-                    created_at TEXT,
-                    approved_by TEXT,
-                    approved_at TEXT
-                )
-            """)
-            # 2. Clear any existing archive matching current drafted IDs to prevent duplicate PK conflict
-            db.execute("""
-                DELETE FROM demo_archive_draft 
-                WHERE draft_id IN (SELECT draft_id FROM application_draft WHERE status = 'drafted')
-            """)
-            # 3. Copy drafted rows into demo_archive_draft
+            # ── Ensure archive tables exist ──
+            db.execute(_ARCHIVE_DRAFT_DDL)
+            db.execute(_ARCHIVE_LOG_DDL)
+
+            # ── Archive application_draft (ALL statuses) ──
+            db.execute("DELETE FROM demo_archive_draft")
             db.execute("""
                 INSERT INTO demo_archive_draft
-                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at)
-                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at
-                FROM application_draft WHERE status = 'drafted'
+                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields,
+                 draft_text, status, created_at, approved_by, approved_at)
+                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields,
+                       draft_text, status, created_at, approved_by, approved_at
+                FROM application_draft
             """)
-            # 4. Remove drafted rows from application_draft table
-            db.execute("DELETE FROM application_draft WHERE status = 'drafted'")
+            db.execute("DELETE FROM application_draft")
+
+            # ── Archive approval_log (ALL rows) ──
+            db.execute("DELETE FROM demo_archive_log")
+            db.execute("""
+                INSERT INTO demo_archive_log
+                (log_id, draft_id, action, actor_name, timestamp, note, extra)
+                SELECT log_id, draft_id, action, actor_name, timestamp, note, extra
+                FROM approval_log
+            """)
+            db.execute("DELETE FROM approval_log")
+
             db.commit()
-        return redirect(url_for("index", flash="🔄 Demo state reset: 0 pending drafts on dashboard. Go to Monitoring to trigger live event!"))
+        return redirect(url_for("index", flash="🔄 Demo fully reset: 0 drafts, 0 audit entries. Go to Monitoring & Demo to trigger a live event!"))
     except Exception as exc:
         log.error("Demo reset failed: %s", exc)
         return redirect(url_for("index", error=f"Demo reset failed: {exc}"))
@@ -379,40 +404,42 @@ def demo_reset():
 
 @app.route("/demo/restore", methods=["POST"])
 def demo_restore():
-    """Restore all archived demo drafts back to dashboard application_draft table."""
+    """Restore all archived drafts and audit log entries back from demo archive tables."""
     try:
         with get_db() as db:
-            # Ensure table exists
+            db.execute(_ARCHIVE_DRAFT_DDL)
+            db.execute(_ARCHIVE_LOG_DDL)
+
+            # ── Restore application_draft ──
             db.execute("""
-                CREATE TABLE IF NOT EXISTS demo_archive_draft (
-                    draft_id TEXT PRIMARY KEY,
-                    profile_id TEXT,
-                    scheme_id TEXT,
-                    filled_fields TEXT,
-                    unresolved_fields TEXT,
-                    draft_text TEXT,
-                    status TEXT,
-                    created_at TEXT,
-                    approved_by TEXT,
-                    approved_at TEXT
-                )
-            """)
-            # 1. Clear matching IDs from application_draft if any exist
-            db.execute("""
-                DELETE FROM application_draft 
+                DELETE FROM application_draft
                 WHERE draft_id IN (SELECT draft_id FROM demo_archive_draft)
             """)
-            # 2. Restore rows into application_draft with valid status 'drafted'
             db.execute("""
                 INSERT INTO application_draft
-                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, status, created_at, approved_by, approved_at)
-                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields, draft_text, 'drafted', created_at, approved_by, approved_at
+                (draft_id, profile_id, scheme_id, filled_fields, unresolved_fields,
+                 draft_text, status, created_at, approved_by, approved_at)
+                SELECT draft_id, profile_id, scheme_id, filled_fields, unresolved_fields,
+                       draft_text, status, created_at, approved_by, approved_at
                 FROM demo_archive_draft
             """)
-            # 3. Clear archive table
             db.execute("DELETE FROM demo_archive_draft")
+
+            # ── Restore approval_log ──
+            db.execute("""
+                DELETE FROM approval_log
+                WHERE log_id IN (SELECT log_id FROM demo_archive_log)
+            """)
+            db.execute("""
+                INSERT INTO approval_log
+                (log_id, draft_id, action, actor_name, timestamp, note, extra)
+                SELECT log_id, draft_id, action, actor_name, timestamp, note, extra
+                FROM demo_archive_log
+            """)
+            db.execute("DELETE FROM demo_archive_log")
+
             db.commit()
-        return redirect(url_for("index", flash="✅ Restored all demo drafts to dashboard."))
+        return redirect(url_for("index", flash="✅ Restored all demo drafts and audit history."))
     except Exception as exc:
         log.error("Demo restore failed: %s", exc)
         return redirect(url_for("index", error=f"Demo restore failed: {exc}"))
