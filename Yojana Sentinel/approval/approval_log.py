@@ -37,17 +37,16 @@ def _load_log() -> list[dict]:
     try:
         with get_db() as db:
             rows = db.fetchall("SELECT * FROM approval_log ORDER BY timestamp DESC LIMIT 200")
-            if rows:
-                results = []
-                for r in rows:
-                    d = dict(r)
-                    if isinstance(d.get("extra"), str):
-                        try:
-                            d["extra"] = json.loads(d["extra"])
-                        except Exception:
-                            d["extra"] = {}
-                    results.append(d)
-                return results
+            results = []
+            for r in rows:
+                d = dict(r)
+                if isinstance(d.get("extra"), str):
+                    try:
+                        d["extra"] = json.loads(d["extra"])
+                    except Exception:
+                        d["extra"] = {}
+                results.append(d)
+            return results
     except Exception as exc:
         log.warning("Could not read approval_log from DB: %s — checking JSON log.", exc)
 
