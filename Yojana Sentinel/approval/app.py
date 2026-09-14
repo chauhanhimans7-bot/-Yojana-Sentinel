@@ -636,7 +636,7 @@ def generate_rejection_reason(draft_id: str):
         client = Groq(api_key=api_key)
         log.info("AI rejection reason | draft=%s | calling Groq", draft_id)
 
-        models_to_try = ["groq/compound-mini", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.1-8b-instant"]
+        models_to_try = ["llama-3.1-8b-instant", "llama3-70b-8192"]
         response = None
         last_err = None
 
@@ -650,7 +650,7 @@ def generate_rejection_reason(draft_id: str):
                     ],
                     temperature=0.3,
                     max_tokens=200,
-                    timeout=20,
+                    timeout=10,
                 )
                 log.info("AI rejection reason succeeded with model %s for draft=%s", model_name, draft_id)
                 break

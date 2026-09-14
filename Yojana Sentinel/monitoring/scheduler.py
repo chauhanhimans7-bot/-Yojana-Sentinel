@@ -215,7 +215,7 @@ def trigger_matching_for_scheme(scheme_id: str, schemes: list[dict]) -> None:
 
     results = []
     for profile in profiles:
-        result = do_match(profile, target, run_llm=True)
+        result = do_match(profile, target, run_llm=False)
         results.append(result)
         log.info(
             "  → profile=%s status=%s score=%.0f",

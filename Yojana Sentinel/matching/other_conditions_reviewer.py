@@ -93,7 +93,7 @@ def _call_llm(profile: dict, condition: str, scheme_name: str) -> tuple[Conditio
     if client is None:
         return "unclear", "LLM client unavailable — GROQ_API_KEY not set or groq package missing."
 
-    models_to_try = ["groq/compound-mini", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.1-8b-instant"]
+    models_to_try = ["llama-3.1-8b-instant", "llama3-70b-8192"]
     response = None
     last_err = None
 
@@ -107,7 +107,7 @@ def _call_llm(profile: dict, condition: str, scheme_name: str) -> tuple[Conditio
                 ],
                 temperature=0.0,   # Force deterministic output for eligibility decisions
                 max_tokens=300,
-                timeout=15,
+                timeout=10,
             )
             break
         except Exception as exc:
