@@ -222,17 +222,23 @@ def trigger_matching_for_scheme(scheme_id: str, schemes: list[dict]) -> None:
             profile.get("profile_id"), result["match_status"], result["match_score"],
         )
 
-    # Upsert results to DB
-    if DB_PATH.exists():
-        try:
-            conn = sqlite3.connect(str(DB_PATH))
-            conn.execute("PRAGMA foreign_keys=ON")
+    # Upsert results to DB via the shared get_db() abstraction so that
+    # results land in whichever backend (Supabase / SQLite) is active.
+    try:
+        from db.database import get_db
+        with get_db() as db:
             for res in results:
-                conn.execute(
-                    """INSERT OR REPLACE INTO match_result
+                db.execute(
+                    """INSERT INTO match_result
                        (profile_id, scheme_id, match_score, match_status,
                         missing_info, reasoning, evaluated_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT (profile_id, scheme_id) DO UPDATE SET
+                           match_score    = EXCLUDED.match_score,
+                           match_status   = EXCLUDED.match_status,
+                           missing_info   = EXCLUDED.missing_info,
+                           reasoning      = EXCLUDED.reasoning,
+                           evaluated_at   = EXCLUDED.evaluated_at""",
                     (
                         res["profile_id"], res["scheme_id"], res["match_score"],
                         res["match_status"],
@@ -240,11 +246,9 @@ def trigger_matching_for_scheme(scheme_id: str, schemes: list[dict]) -> None:
                         res["reasoning"], res["evaluated_at"],
                     ),
                 )
-            conn.commit()
-            conn.close()
-            log.info("Match results for scheme '%s' saved to DB.", scheme_id)
-        except Exception as exc:
-            log.error("Failed to save match results to DB: %s", exc)
+        log.info("Match results for scheme '%s' saved to DB.", scheme_id)
+    except Exception as exc:
+        log.error("Failed to save match results to DB: %s", exc)
 
 
 # ── Single tick ────────────────────────────────────────────────────────────────

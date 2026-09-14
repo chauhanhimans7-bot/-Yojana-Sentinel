@@ -317,18 +317,27 @@ def trigger_event_api():
         if not matched and drafts:
             matched = drafts[0]
 
-        return jsonify({
-            "status": "success",
-            "event": event,
-            "scheme_id": scheme_id,
-            "scheme_name": matched.get("scheme_name", scheme_id) if matched else scheme_id,
-            "draft_id": matched.get("draft_id", "draft-001") if matched else "draft-001",
-            "beneficiary_name": matched.get("profile_name", "Suresh Kumar") if matched else "Suresh Kumar",
-            "match_score": matched.get("match_score", 100) if matched else 100,
-            "match_status": matched.get("match_status", "strong_match") if matched else "strong_match",
-            "pending_count": len(drafts),
-            "message": f"Event '{event_type}' injected and matching complete for {scheme_id}."
-        })
+        if matched:
+            return jsonify({
+                "status": "success",
+                "event": event,
+                "scheme_id": scheme_id,
+                "scheme_name": matched.get("scheme_name", scheme_id),
+                "draft_id": matched.get("draft_id", ""),
+                "beneficiary_name": matched.get("profile_name", ""),
+                "match_score": matched.get("match_score", 0),
+                "match_status": matched.get("match_status", ""),
+                "pending_count": len(drafts),
+                "message": f"Event '{event_type}' injected and {len(drafts)} draft(s) ready for approval.",
+            })
+        else:
+            return jsonify({
+                "status": "no_drafts",
+                "event": event,
+                "scheme_id": scheme_id,
+                "pending_count": 0,
+                "message": f"Event '{event_type}' injected but no eligible drafts were created for {scheme_id}. Check match results.",
+            })
     except Exception as exc:
         log.error("API trigger event failed: %s", exc)
         return jsonify({"status": "error", "error": str(exc)}), 500
