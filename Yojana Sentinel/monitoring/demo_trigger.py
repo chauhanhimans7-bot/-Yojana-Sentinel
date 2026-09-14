@@ -167,7 +167,13 @@ def inject_event(scheme_id: str, event_type: str) -> dict:
         log.info("Triggering matcher for scheme '%s'...", scheme_id)
         from monitoring.scheduler import trigger_matching_for_scheme
         trigger_matching_for_scheme(scheme_id, schemes)
-        log.info("Matcher triggered. Check data/match_results.json for fresh results.")
+        log.info("Generating application drafts for scheme '%s'...", scheme_id)
+        try:
+            from main import batch_create_drafts
+            drafts_count = batch_create_drafts(use_llm=False, force_new=True)
+            log.info("Created %d draft(s) after event trigger for '%s'.", drafts_count, scheme_id)
+        except Exception as exc:
+            log.error("Failed to generate drafts after event trigger: %s", exc)
     else:
         log.info(
             "Event type '%s' does not trigger re-matching "

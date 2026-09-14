@@ -37,7 +37,7 @@ from monitoring.demo_trigger import inject_event as simulate_event
 from approval.app import app
 
 
-def batch_create_drafts(use_llm: bool = True) -> int:
+def batch_create_drafts(use_llm: bool = True, force_new: bool = False) -> int:
     """Generate ApplicationDraft records for all strong and partial matches."""
     schemes_file = ROOT / "data" / "schemes_seed.json"
     profiles_file = ROOT / "data" / "profiles_seed.json"
@@ -100,7 +100,7 @@ def batch_create_drafts(use_llm: bool = True) -> int:
                     match_result=r,
                     profile=profiles[pid],
                     scheme=schemes[sid],
-                    force_new=False,
+                    force_new=force_new,
                 )
                 created += 1
                 log.info("Created draft %s for profile=%s scheme=%s", draft["draft_id"], pid, sid)
